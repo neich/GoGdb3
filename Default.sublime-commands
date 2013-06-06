@@ -82,7 +82,11 @@
         "command": "gdb_open_threads_view"
     },
     {
-        "caption": "SublimeGDB: Run Test",
+        "caption": "GoGdb: Debug Test",
         "command": "gss_test"
+    },
+    {
+        "caption": "GoGdb: Run",
+        "command": "gss_run"
     }
 ]

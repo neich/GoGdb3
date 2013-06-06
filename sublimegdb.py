@@ -59,7 +59,7 @@ except:
         return s.decode("utf-8")
 
     import queue as Queue
-    from SublimeGDB.resultparser import parse_result_line
+    from GoGdb.resultparser import parse_result_line
 
 def get_setting(key, default=None, view=None):
     try:
@@ -70,7 +70,7 @@ def get_setting(key, default=None, view=None):
             return s.get("sublimegdb_%s" % key)
     except:
         pass
-    return sublime.load_settings("SublimeGDB.sublime-settings").get(key, default)
+    return sublime.load_settings("GoGdb.sublime-settings").get(key, default)
 
 def project_path(window):
     if window is None:
@@ -575,7 +575,7 @@ class GDBRegisterView(GDBView):
 
     def open(self):
         super(GDBRegisterView, self).open()
-        self.set_syntax("Packages/SublimeGDB/gdb_registers.tmLanguage")
+        self.set_syntax("Packages/GoGdb/gdb_registers.tmLanguage")
         self.get_view().settings().set("word_wrap", False)
         if self.is_open() and gdb_run_status == "stopped":
             self.update_values()
@@ -969,7 +969,7 @@ class GDBDisassemblyView(GDBView):
 
     def open(self):
         super(GDBDisassemblyView, self).open()
-        self.set_syntax("Packages/SublimeGDB/gdb_disasm.tmLanguage")
+        self.set_syntax("Packages/GoGdb/gdb_disasm.tmLanguage")
         self.get_view().settings().set("word_wrap", False)
         if self.is_open() and gdb_run_status == "stopped":
             self.update_disassembly()
@@ -1231,7 +1231,7 @@ class GDBSessionView(GDBView):
 
     def open(self):
         super(GDBSessionView, self).open()
-        self.set_syntax("Packages/SublimeGDB/gdb_session.tmLanguage")
+        self.set_syntax("Packages/GoGdb/gdb_session.tmLanguage")
 
 
 gdb_session_view = GDBSessionView()
@@ -1586,6 +1586,7 @@ class GdbLaunch(sublime_plugin.WindowCommand):
         val=val.replace("${pkgp}",self.pkgp)
         val=val.replace("${pkgn}",self.pkgn)
         val=val.replace("${binp}",self.binp)
+        val=val.replace("${args}",self.args)
         return val
     def doGoPrj(self,test,trun,view):
         self.ppath=project_path(self.window)
@@ -1605,9 +1606,15 @@ class GdbLaunch(sublime_plugin.WindowCommand):
         print "pkgn:"+self.pkgn
         if test:
             self.binp=os.path.join(self.ppath,"bin/"+self.pkgn+".test")
+            if trun is None:
+                self.args=""
+            else:
+                self.args=trun
         else:
             self.binp=os.path.join(self.ppath,"bin/"+self.pkgn)
+            self.args=""
         print "binp:"+self.binp
+        print "args:"+self.args
         if os.path.exists(self.binp):
             os.remove(self.binp)
             if os.path.exists(self.binp):

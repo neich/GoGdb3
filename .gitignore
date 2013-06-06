@@ -3,3 +3,5 @@ sublimegdb.sublime-workspace
 *.pyc
 
 .DS_Store
+
+*.cache
