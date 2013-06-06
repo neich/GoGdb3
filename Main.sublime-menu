@@ -12,20 +12,20 @@
                 "children":
                 [
                     {
-                        "caption": "SublimeGDB",
+                        "caption": "GoGDB",
                         "children":
                         [
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/SublimeGDB/SublimeGDB.sublime-settings"
+                                    "file": "${packages}/GoGdb/GoGdb.sublime-settings"
                                 },
                                 "caption": "Settings – Default"
                             },
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/User/SublimeGDB.sublime-settings"
+                                    "file": "${packages}/User/GoGdb.sublime-settings"
                                 },
                                 "caption": "Settings – User"
                             },
@@ -33,7 +33,7 @@
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/SublimeGDB/Default.sublime-keymap"
+                                    "file": "${packages}/GoGdb/Default.sublime-keymap"
                                 },
                                 "caption": "Key Bindings – Default"
                             },
