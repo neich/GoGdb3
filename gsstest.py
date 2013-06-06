@@ -9,9 +9,15 @@ DOMAIN = 'GssTest'
 
 TEST_PAT = re.compile(r'^((Test|Example|Benchmark)\w*)')
 
-class GssTestCommand(sublime_plugin.WindowCommand):
+class GssRunCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return True
+	def run(self):
+		self.window.active_view().run_command('gs9o_open', {'run': ['run']})
+
+class GssTestCommand(sublime_plugin.WindowCommand):
+	def is_enabled(self):
+		return gs.is_go_source_view(self.window.active_view())
 	def run(self):
 		def f(res, err):
 			if err:

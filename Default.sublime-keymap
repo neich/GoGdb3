@@ -91,4 +91,9 @@
         "context": [{"key": "gdb_input_view"}],
         "keys": ["down"]
     }
+    ,
+    {
+        "command": "gss_run",
+        "keys": ["super+shift+r"]
+    }
 ]
