@@ -72,7 +72,43 @@ def get_setting(key, default=None, view=None):
         pass
     return sublime.load_settings("SublimeGDB.sublime-settings").get(key, default)
 
+def project_path(window):
+    if window is None:
+        window = sublime.active_window()
+    aview=window.active_view()
+    afile=aview.file_name()
+    apath=os.path.dirname(afile)
+#    alog=file("/tmp/pp.log",'a')
+    while 1:
+      if os.path.ismount(apath):
+         break
+      for root,dirs,files in os.walk(apath):
+         for f in files:
+#            alog.write(f+"\n")
+            if re.match(r'.*\.sublime-project',f):
+              return root
+         break
+      apath=os.path.dirname(apath)
 
+#    alog.close()
+    return ""
+def pkg_path(ppath,window):
+    if window is None:
+        window = sublime.active_window()
+    aview=window.active_view()
+    afile=aview.file_name()
+    apath=os.path.dirname(afile)
+    spath=os.path.join(ppath,"src")
+    if apath.find(spath+"/")>-1:
+        return apath.replace(spath+"/","")
+    return ""
+def pkg_name(window):
+    if window is None:
+        window = sublime.active_window()
+    aview=window.active_view()
+    afile=aview.file_name()
+    apath=os.path.dirname(afile)
+    return os.path.basename(apath)
 def expand_path(value, window):
     if window is None:
         # Views can apparently be window less, in most instances getting
@@ -88,7 +124,7 @@ def expand_path(value, window):
         # someone can think of something that should be done plugin
         # side to fix this.
         window = sublime.active_window()
-
+#    project_path(window)
     get_existing_files = \
         lambda m: [ path \
             for f in window.folders() \
@@ -1545,7 +1581,54 @@ class GdbInput(sublime_plugin.WindowCommand):
 
 
 class GdbLaunch(sublime_plugin.WindowCommand):
-    def run(self):
+    def enval(self,val,window):
+        val=val.replace("${ppath}",self.ppath)
+        val=val.replace("${pkgp}",self.pkgp)
+        val=val.replace("${pkgn}",self.pkgn)
+        val=val.replace("${binp}",self.binp)
+        return val
+    def doGoPrj(self,test,trun,view):
+        self.ppath=project_path(self.window)
+        if self.ppath=="":
+            sublime.status_message("project not found!")
+            return False
+        print "ppath:"+self.ppath
+        self.pkgp=pkg_path(self.ppath,self.window)
+        if self.pkgp=="":
+            sublime.status_message("package path not found!")
+            return False
+        print "pkgp:"+self.pkgp
+        self.pkgn=pkg_name(self.window)
+        if self.pkgn=="":
+            sublime.status_message("package name not found!")
+            return False
+        print "pkgn:"+self.pkgn
+        if test:
+            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn+".test")
+        else:
+            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn)
+        print "binp:"+self.binp
+        if os.path.exists(self.binp):
+            os.remove(self.binp)
+            if os.path.exists(self.binp):
+                sublime.status_message("clean error!")
+                return False
+        try:
+            go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
+            if test:
+                os.chdir(os.path.join(self.ppath,"bin"))
+                go_cmd=go_cmd+" test "+self.pkgp+" -c -i"
+            else:
+                go_cmd=go_cmd+" install "+self.pkgp
+            os.environ["GOPATH"]=self.ppath
+            os.system(go_cmd)
+        except:
+            pass
+        if os.path.exists(self.binp)==False:
+            sublime.status_message("build error!")
+            return False
+        return True
+    def run(self,test=None,trun=None):
         global gdb_process
         global gdb_run_status
         global gdb_bkp_window
@@ -1557,6 +1640,10 @@ class GdbLaunch(sublime_plugin.WindowCommand):
         view = self.window.active_view()
         DEBUG = get_setting("debug", False, view)
         DEBUG_FILE = expand_path(get_setting("debug_file", "stdout", view), self.window)
+        gprj=get_setting("go_project", False, view)
+        if gprj:
+            if not self.doGoPrj(test,trun,view):
+                return;
         if DEBUG:
             print("Will write debug info to file: %s" % DEBUG_FILE)
         if gdb_process is None or gdb_process.poll() is not None:
@@ -1564,8 +1651,14 @@ class GdbLaunch(sublime_plugin.WindowCommand):
             if isinstance(commandline, list):
                 # backwards compatibility for when the commandline was a list
                 commandline = " ".join(commandline)
-            commandline = expand_path(commandline, self.window)
-            path = expand_path(get_setting("workingdir", "/tmp", view), self.window)
+            if gprj:
+                commandline = self.enval(commandline, self.window)
+                path = self.enval(get_setting("workingdir", "/tmp", view), self.window)
+            else:
+                commandline = expand_path(commandline, self.window)
+                path = expand_path(get_setting("workingdir", "/tmp", view), self.window)
+            print "workingdir:"+path
+            print "commandline:"+commandline
             log_debug("Running: %s\n" % commandline)
             log_debug("In directory: %s\n" % path)
             gdb_process = subprocess.Popen(commandline, shell=True, cwd=path,

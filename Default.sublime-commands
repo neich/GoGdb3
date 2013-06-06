@@ -80,5 +80,9 @@
     {
         "caption": "SublimeGDB: Open Threads View",
         "command": "gdb_open_threads_view"
+    },
+    {
+        "caption": "SublimeGDB: Run Test",
+        "command": "gss_test"
     }
 ]
