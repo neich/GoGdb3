@@ -83,10 +83,24 @@
     },
     {
         "caption": "GoGdb: Debug Test",
-        "command": "gss_test"
+        "command": "gss_test",
+        "args":{
+            "debug":true
+        }
+    },
+    {
+        "caption": "GoGdb: Run Test",
+        "command": "gss_test",
+        "args":{
+            "debug":false
+        }
     },
     {
         "caption": "GoGdb: Run",
         "command": "gss_run"
+    },
+    {
+        "caption": "GoGdb: Stop",
+        "command": "gss_stop"
     }
 ]

@@ -1,6 +1,7 @@
 from gosubl import gs
 from gosubl import mg9
 from sublimegdb import project_path
+from sublimegdb import GoBuilder
 import os
 import re
 import sublime
@@ -10,18 +11,44 @@ DOMAIN = 'GssTest'
 
 TEST_PAT = re.compile(r'^((Test|Example|Benchmark)\w*)')
 
-class GssRunCommand(sublime_plugin.WindowCommand):
+def stop_task(win):
+	aview=win.active_view()
+	apath=aview.file_name()
+	tlist=gs.task_list()
+	gb=GoBuilder()
+	gb.doGoPrj(False,"",win,win.active_view())
+	if len(tlist)>0:
+		for tid,t in tlist:
+			if t["message"] and t["message"].find(gb.sbinp())>0:
+				if t["cancel"]:
+					t["cancel"]()
+
+class GssStopCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return True
 	def run(self):
+		stop_task(self.window)
+
+class GssRunCommand(sublime_plugin.WindowCommand):
+	def is_enabled(self):
+		return True
+	def run(self,debug=False):
 		aview=self.window.active_view()
 		apath=aview.file_name()
-		aview.run_command('gs9o_open', {'run': ['go run '+apath],'wd': project_path(self.window)})
+		tlist=gs.task_list()
+		gb=GoBuilder()
+		gb.doGoPrj(False,"",self.window,self.window.active_view())
+		if len(tlist)>0:
+			for tid,t in tlist:
+				if t["message"] and t["message"].find(gb.sbinp())>0:
+					if t["cancel"]:
+						t["cancel"]()
+		aview.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),gb.args],'wd': project_path(self.window)})
 
 class GssTestCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return gs.is_go_source_view(self.window.active_view())
-	def run(self):
+	def run(self,debug=False):
 		def f(res, err):
 			if err:
 				gs.notify(DOMAIN, err)
@@ -62,7 +89,12 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 					if len(a)>0:
 						sargs=a[0]
 					# print sargs
-					win.run_command('gdb_launch', {'test':True,'trun':sargs})
+					if debug:
+						win.run_command('gdb_launch', {'test':True,'trun':sargs})
+					else:
+						gb=GoBuilder()
+						gb.doGoPrj(True,sargs,self.window,self.window.active_view())
+						win.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),sargs],'wd':gb.ppath })
 
 			gs.show_quick_panel(ents, cb)
 

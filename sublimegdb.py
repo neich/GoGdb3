@@ -109,6 +109,67 @@ def pkg_name(window):
     afile=aview.file_name()
     apath=os.path.dirname(afile)
     return os.path.basename(apath)
+class GoBuilder:
+    def enval(self,val,window):
+        val=val.replace("${ppath}",self.ppath)
+        val=val.replace("${pkgp}",self.pkgp)
+        val=val.replace("${pkgn}",self.pkgn)
+        val=val.replace("${binp}",self.binp)
+        val=val.replace("${args}",self.args)
+        return val
+    #test:if debug test.
+    #trun:test arguments.
+    # win:sublime window.
+    #view:target view.
+    def doGoPrj(self,test,trun,win,view):
+        self.ppath=project_path(win)
+        if self.ppath=="":
+            sublime.status_message("project not found!")
+            return False
+        print "ppath:"+self.ppath
+        self.pkgp=pkg_path(self.ppath,win)
+        if self.pkgp=="":
+            sublime.status_message("package path not found!")
+            return False
+        print "pkgp:"+self.pkgp
+        self.pkgn=pkg_name(win)
+        if self.pkgn=="":
+            sublime.status_message("package name not found!")
+            return False
+        print "pkgn:"+self.pkgn
+        if test:
+            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn+".test")
+            if trun is None:
+                self.args=""
+            else:
+                self.args=trun
+        else:
+            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn)
+            self.args=get_setting("rargs", "", view)
+        print "binp:"+self.binp
+        print "args:"+self.args
+        if os.path.exists(self.binp):
+            os.remove(self.binp)
+            if os.path.exists(self.binp):
+                sublime.status_message("clean error!")
+                return False
+        try:
+            go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
+            if test:
+                os.chdir(os.path.join(self.ppath,"bin"))
+                go_cmd=go_cmd+" test "+self.pkgp+" -c -i"
+            else:
+                go_cmd=go_cmd+" install "+self.pkgp
+            os.environ["GOPATH"]=self.ppath
+            os.system(go_cmd)
+        except:
+            pass
+        if os.path.exists(self.binp)==False:
+            sublime.status_message("build error!")
+            return False
+        return True
+    def sbinp(self):
+        return self.binp.replace(self.ppath+"/","")
 def expand_path(value, window):
     if window is None:
         # Views can apparently be window less, in most instances getting
@@ -1579,62 +1640,7 @@ class GdbInput(sublime_plugin.WindowCommand):
     def run(self):
         show_input()
 
-
 class GdbLaunch(sublime_plugin.WindowCommand):
-    def enval(self,val,window):
-        val=val.replace("${ppath}",self.ppath)
-        val=val.replace("${pkgp}",self.pkgp)
-        val=val.replace("${pkgn}",self.pkgn)
-        val=val.replace("${binp}",self.binp)
-        val=val.replace("${args}",self.args)
-        return val
-    def doGoPrj(self,test,trun,view):
-        self.ppath=project_path(self.window)
-        if self.ppath=="":
-            sublime.status_message("project not found!")
-            return False
-        print "ppath:"+self.ppath
-        self.pkgp=pkg_path(self.ppath,self.window)
-        if self.pkgp=="":
-            sublime.status_message("package path not found!")
-            return False
-        print "pkgp:"+self.pkgp
-        self.pkgn=pkg_name(self.window)
-        if self.pkgn=="":
-            sublime.status_message("package name not found!")
-            return False
-        print "pkgn:"+self.pkgn
-        if test:
-            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn+".test")
-            if trun is None:
-                self.args=""
-            else:
-                self.args=trun
-        else:
-            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn)
-            self.args=""
-        print "binp:"+self.binp
-        print "args:"+self.args
-        if os.path.exists(self.binp):
-            os.remove(self.binp)
-            if os.path.exists(self.binp):
-                sublime.status_message("clean error!")
-                return False
-        try:
-            go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
-            if test:
-                os.chdir(os.path.join(self.ppath,"bin"))
-                go_cmd=go_cmd+" test "+self.pkgp+" -c -i"
-            else:
-                go_cmd=go_cmd+" install "+self.pkgp
-            os.environ["GOPATH"]=self.ppath
-            os.system(go_cmd)
-        except:
-            pass
-        if os.path.exists(self.binp)==False:
-            sublime.status_message("build error!")
-            return False
-        return True
     def run(self,test=None,trun=None):
         global gdb_process
         global gdb_run_status
@@ -1648,8 +1654,9 @@ class GdbLaunch(sublime_plugin.WindowCommand):
         DEBUG = get_setting("debug", False, view)
         DEBUG_FILE = expand_path(get_setting("debug_file", "stdout", view), self.window)
         gprj=get_setting("go_project", False, view)
+        gb=GoBuilder()
         if gprj:
-            if not self.doGoPrj(test,trun,view):
+            if not gb.doGoPrj(test,trun,self.window,view):
                 return;
         if DEBUG:
             print("Will write debug info to file: %s" % DEBUG_FILE)
@@ -1659,8 +1666,8 @@ class GdbLaunch(sublime_plugin.WindowCommand):
                 # backwards compatibility for when the commandline was a list
                 commandline = " ".join(commandline)
             if gprj:
-                commandline = self.enval(commandline, self.window)
-                path = self.enval(get_setting("workingdir", "/tmp", view), self.window)
+                commandline = gb.enval(commandline, self.window)
+                path = gb.enval(get_setting("workingdir", "/tmp", view), self.window)
             else:
                 commandline = expand_path(commandline, self.window)
                 path = expand_path(get_setting("workingdir", "/tmp", view), self.window)

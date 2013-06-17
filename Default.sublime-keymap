@@ -96,4 +96,9 @@
         "command": "gss_run",
         "keys": ["super+shift+r"]
     }
+    ,
+    {
+        "command": "gss_stop",
+        "keys": ["super+shift+k"]
+    }
 ]
