@@ -1,5 +1,6 @@
 from gosubl import gs
 from gosubl import mg9
+from sublimegdb import project_path
 import os
 import re
 import sublime
@@ -13,7 +14,9 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return True
 	def run(self):
-		self.window.active_view().run_command('gs9o_open', {'run': ['run']})
+		aview=self.window.active_view()
+		apath=aview.file_name()
+		aview.run_command('gs9o_open', {'run': ['go run '+apath],'wd': project_path(self.window)})
 
 class GssTestCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
