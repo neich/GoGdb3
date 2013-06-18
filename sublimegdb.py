@@ -173,7 +173,8 @@ class GoBuilder:
             win.run_command('gs9o_open', {'run': ['sh','cat',self.elogp],'wd': project_path(win)})
             sublime.status_message("build error!")
             return False
-        if os.path.getsize('/tmp/gogdb.log')>0:
+
+        if os.path.exists(self.nlogp) and os.path.getsize(self.nlogp)>0:
             win.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'wd': project_path(win)})
         return True
     def sbinp(self):
