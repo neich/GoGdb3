@@ -121,7 +121,7 @@ class GoBuilder:
     #trun:test arguments.
     # win:sublime window.
     #view:target view.
-    def doGoPrj(self,test,trun,win,view):
+    def initEnv(self,test,trun,win,view):
         self.ppath=project_path(win)
         if self.ppath=="":
             sublime.status_message("project not found!")
@@ -158,6 +158,8 @@ class GoBuilder:
         self.nlogp=self.ppath+"/build/build.log"
         if not os.path.exists(self.buildp):
             os.makedirs(self.buildp)
+    def doGoPrj(self,test,trun,win,view):
+        self.initEnv(test,trun,win,view)
         try:
             go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
             if test:

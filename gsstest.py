@@ -16,9 +16,7 @@ def stop_task(win):
 	apath=aview.file_name()
 	tlist=gs.task_list()
 	gb=GoBuilder()
-	if not gb.doGoPrj(False,"",win,win.active_view()):
-		print "build error"
-		return
+	gb.initEnv(False,"",win,win.active_view())
 	if len(tlist)>0:
 		for tid,t in tlist:
 			if t["message"] and t["message"].find(gb.sbinp())>0:

@@ -101,4 +101,12 @@
         "command": "gss_stop",
         "keys": ["super+shift+k"]
     }
+    ,
+    {
+        "command": "gss_test",
+        "keys": ["super+shift+o"],
+        "args":{
+            "debug":true
+        }
+    }
 ]
