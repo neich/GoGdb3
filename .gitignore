@@ -5,3 +5,5 @@ sublimegdb.sublime-workspace
 .DS_Store
 
 *.cache
+
+GoGdb.sublime-workspace
