@@ -16,7 +16,9 @@ def stop_task(win):
 	apath=aview.file_name()
 	tlist=gs.task_list()
 	gb=GoBuilder()
-	gb.doGoPrj(False,"",win,win.active_view())
+	if not gb.doGoPrj(False,"",win,win.active_view()):
+		print "build error"
+		return
 	if len(tlist)>0:
 		for tid,t in tlist:
 			if t["message"] and t["message"].find(gb.sbinp())>0:
@@ -35,9 +37,14 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 	def run(self,debug=False):
 		aview=self.window.active_view()
 		apath=aview.file_name()
+		if apath.find("_test.go")==len(apath)-8:
+			self.window.run_command("gss_test")
+			return
 		tlist=gs.task_list()
 		gb=GoBuilder()
-		gb.doGoPrj(False,"",self.window,self.window.active_view())
+		if not gb.doGoPrj(False,"",self.window,self.window.active_view()):
+			print "build error"
+			return
 		if len(tlist)>0:
 			for tid,t in tlist:
 				if t["message"] and t["message"].find(gb.sbinp())>0:
@@ -93,8 +100,10 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 						win.run_command('gdb_launch', {'test':True,'trun':sargs})
 					else:
 						gb=GoBuilder()
-						gb.doGoPrj(True,sargs,self.window,self.window.active_view())
-						win.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),sargs],'wd':gb.ppath })
+						if not gb.doGoPrj(True,sargs,self.window,self.window.active_view()):
+							print "build err"
+						else:
+							win.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),sargs],'wd':gb.ppath })
 
 			gs.show_quick_panel(ents, cb)
 
