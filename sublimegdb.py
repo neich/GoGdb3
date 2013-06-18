@@ -153,20 +153,28 @@ class GoBuilder:
             if os.path.exists(self.binp):
                 sublime.status_message("clean error!")
                 return False
+        self.buildp=self.ppath+"/build"
+        self.elogp=self.ppath+"/build/err.log"
+        self.nlogp=self.ppath+"/build/build.log"
+        if not os.path.exists(self.buildp):
+            os.makedirs(self.buildp)
         try:
             go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
             if test:
                 os.chdir(os.path.join(self.ppath,"bin"))
-                go_cmd=go_cmd+" test "+self.pkgp+" -c -i"
+                go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
             else:
-                go_cmd=go_cmd+" install "+self.pkgp
+                go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
             os.environ["GOPATH"]=self.ppath
             os.system(go_cmd)
         except:
             pass
         if os.path.exists(self.binp)==False:
+            win.run_command('gs9o_open', {'run': ['sh','cat',self.elogp],'wd': project_path(win)})
             sublime.status_message("build error!")
             return False
+        if os.path.getsize('/tmp/gogdb.log')>0:
+            win.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'wd': project_path(win)})
         return True
     def sbinp(self):
         return self.binp.replace(self.ppath+"/","")
