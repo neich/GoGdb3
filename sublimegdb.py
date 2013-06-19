@@ -162,13 +162,24 @@ class GoBuilder:
         self.initEnv(test,trun,win,view)
         try:
             go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
+            nout=""
+            eout=""
+            os.environ['GOPATH']=os.environ['GOPATH']+":"+self.ppath
             if test:
                 os.chdir(os.path.join(self.ppath,"bin"))
-                go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
+                nout,eout=subprocess.Popen([go_cmd,"test",self.pkgp,"-c","-i"],stdout=subprocess.PIPE,stderr=subprocess.PIPE).communicate()
+                # go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
             else:
-                go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
-            os.environ["GOPATH"]=self.ppath
-            os.system(go_cmd)
+                nout,eout=subprocess.Popen([go_cmd,"install",self.pkgp],stdout=subprocess.PIPE,stderr=subprocess.PIPE).communicate()
+                # go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
+            nf=open(self.nlogp,'w')
+            nf.write(nout)
+            nf.close()
+            ef=open(self.elogp,'w')
+            ef.write(eout)
+            ef.close()
+            # os.system(go_cmd)
+            # print nout,eout
         except:
             pass
         if os.path.exists(self.binp)==False:
