@@ -26,7 +26,7 @@
 
     // NOTE: You MUST provide --interpreter=mi for the plugin to work
     "commandline": "gdb --interpreter=mi ./executable",
-
+    "go_cmd": "/usr/bin/go",
     // The command to use to run the program.
     // If you are attaching to a remote program, you
     // probably want to change this to -exec-continue

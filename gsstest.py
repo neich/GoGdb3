@@ -48,7 +48,9 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 				if t["message"] and t["message"].find(gb.sbinp())>0:
 					if t["cancel"]:
 						t["cancel"]()
+		print "------",gb.sbinp(),gb.args
 		aview.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),gb.args],'wd': project_path(self.window)})
+		aview.run_command('gs9o_open', {'run': ['sh','echo','jjjjjjj'],'wd': project_path(self.window)})
 
 class GssTestCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):

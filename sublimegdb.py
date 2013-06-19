@@ -162,6 +162,7 @@ class GoBuilder:
         self.initEnv(test,trun,win,view)
         try:
             go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
+            # print "go:"+go_cmd
             nout=""
             eout=""
             os.environ['GOPATH']=os.environ['GOPATH']+":"+self.ppath
@@ -172,14 +173,14 @@ class GoBuilder:
             else:
                 (nout,eout)=subprocess.Popen([go_cmd,"install",self.pkgp],stdout=subprocess.PIPE).communicate()
                 # go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
-            blogf=open(self.nlogp,'w')
-            blogf.write(nout)
-            blogf.flush()
-            blogf.close()
+            # blogf=open(self.nlogp,'w')
+            # blogf.write(nout)
+            # blogf.flush()
+            # blogf.close()
         except:
-            pass
-        if os.path.exists(self.nlogp) and os.path.getsize(self.nlogp)>0:
-            win.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'wd': project_path(win)})
+            print sys.exc_info()
+        # if os.path.exists(self.nlogp) and os.path.getsize(self.nlogp)>0:
+        #     win.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'wd': project_path(win)})
         if os.path.exists(self.binp)==False:
             sublime.status_message("build error!")
             return False
