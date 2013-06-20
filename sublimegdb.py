@@ -76,6 +76,8 @@ def project_path(window):
     if window is None:
         window = sublime.active_window()
     aview=window.active_view()
+    return project_pathv(aview)
+def project_pathv(aview):
     afile=aview.file_name()
     apath=os.path.dirname(afile)
 #    alog=file("/tmp/pp.log",'a')
@@ -96,6 +98,8 @@ def pkg_path(ppath,window):
     if window is None:
         window = sublime.active_window()
     aview=window.active_view()
+    return pkg_pathv(ppath,aview)
+def pkg_pathv(ppath,aview):
     afile=aview.file_name()
     apath=os.path.dirname(afile)
     spath=os.path.join(ppath,"src")
@@ -106,6 +110,8 @@ def pkg_name(window):
     if window is None:
         window = sublime.active_window()
     aview=window.active_view()
+    return pkg_namev(aview)
+def pkg_namev(aview):
     afile=aview.file_name()
     apath=os.path.dirname(afile)
     return os.path.basename(apath)
@@ -121,18 +127,18 @@ class GoBuilder:
     #trun:test arguments.
     # win:sublime window.
     #view:target view.
-    def initEnv(self,test,trun,win,view):
-        self.ppath=project_path(win)
+    def initEnv(self,test,trun,view):
+        self.ppath=project_pathv(view)
         if self.ppath=="":
             sublime.status_message("project not found!")
             return False
         print "ppath:"+self.ppath
-        self.pkgp=pkg_path(self.ppath,win)
+        self.pkgp=pkg_pathv(self.ppath,view)
         if self.pkgp=="":
             sublime.status_message("package path not found!")
             return False
         print "pkgp:"+self.pkgp
-        self.pkgn=pkg_name(win)
+        self.pkgn=pkg_namev(view)
         if self.pkgn=="":
             sublime.status_message("package name not found!")
             return False
@@ -158,8 +164,8 @@ class GoBuilder:
         self.nlogp=self.ppath+"/build/build.log"
         if not os.path.exists(self.buildp):
             os.makedirs(self.buildp)
-    def doGoPrj(self,test,trun,win,view):
-        self.initEnv(test,trun,win,view)
+    def doGoPrj(self,test,trun,view):
+        self.initEnv(test,trun,view)
         try:
             go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
             print "go:"+go_cmd

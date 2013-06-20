@@ -1,6 +1,8 @@
 from gosubl import gs
 from gosubl import mg9
 from sublimegdb import project_path
+from sublimegdb import project_pathv
+from sublimegdb import pkg_pathv
 from sublimegdb import GoBuilder
 import os
 import re
@@ -22,6 +24,19 @@ def stop_task(win):
 			if t["message"] and t["message"].find(gb.sbinp())>0:
 				if t["cancel"]:
 					t["cancel"]()
+class GssSaveListener(sublime_plugin.EventListener):
+	def __init__(self):
+		self.loading=False
+	def on_post_save(self,view):
+		if self.loading and self.loading:
+			return
+		self.loading=True
+		apath=view.file_name()
+		if apath.find(".go")!=len(apath)-3:
+			return
+		gb=GoBuilder()
+		gb.doGoPrj(False,"",view)
+		self.loading=False
 
 class GssStopCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
@@ -40,7 +55,7 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 			return
 		tlist=gs.task_list()
 		gb=GoBuilder()
-		if not gb.doGoPrj(False,"",self.window,self.window.active_view()):
+		if not gb.doGoPrj(False,"",self.window.active_view()):
 			print "build error"
 			return
 		if len(tlist)>0:
