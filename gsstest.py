@@ -114,7 +114,7 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 					else:
 						gb=GoBuilder()
 						if not gb.doGoPrj(True,sargs,self.window.active_view()):
-							print "build err"
+							print "build error"
 						else:
 							win.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),sargs],'wd':gb.ppath })
 

@@ -173,19 +173,25 @@ class GoBuilder:
             os.environ['GOPATH']=os.environ['GOPATH']+":"+self.ppath
             if test:
                 os.chdir(os.path.join(self.ppath,"bin"))
-                (nout,eout)=subprocess.Popen([go_cmd,"test",self.pkgp,"-c","-i"],stdout=subprocess.PIPE).communicate()
+                (nout,eout)=subprocess.Popen([go_cmd,"test",self.pkgp,"-c","-i"],stdout=subprocess.PIPE,stderr=subprocess.PIPE).communicate()
                 # go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
             else:
-                (nout,eout)=subprocess.Popen([go_cmd,"install",self.pkgp],stdout=subprocess.PIPE).communicate()
+                (nout,eout)=subprocess.Popen([go_cmd,"install",self.pkgp],stdout=subprocess.PIPE,stderr=subprocess.PIPE).communicate()
                 # go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
             blogf=open(self.nlogp,'w')
             blogf.write(nout)
             blogf.flush()
             blogf.close()
+            blogf=open(self.elogp,'w')
+            blogf.write(eout)
+            blogf.flush()
+            blogf.close()
         except:
             print sys.exc_info()
         if os.path.exists(self.nlogp) and os.path.getsize(self.nlogp)>0:
-            win.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'wd': project_path(win)})
+            view.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'focus_view':False,'wd': project_pathv(view)})
+        if os.path.exists(self.elogp) and os.path.getsize(self.elogp)>0:
+            view.run_command('gs9o_open', {'run': ['sh','cat',self.elogp],'focus_view':False,'wd': project_pathv(view)})
         if os.path.exists(self.binp)==False:
             sublime.status_message("build error!")
             return False
