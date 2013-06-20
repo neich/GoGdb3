@@ -1678,7 +1678,7 @@ class GdbLaunch(sublime_plugin.WindowCommand):
         gprj=get_setting("go_project", False, view)
         gb=GoBuilder()
         if gprj:
-            if not gb.doGoPrj(test,trun,self.window,view):
+            if not gb.doGoPrj(test,trun,view):
                 return;
         if DEBUG:
             print("Will write debug info to file: %s" % DEBUG_FILE)
