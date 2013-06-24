@@ -35,7 +35,9 @@ class GssSaveListener(sublime_plugin.EventListener):
 		if apath.find(".go")!=len(apath)-3:
 			return
 		gb=GoBuilder()
-		gb.doGoPrj(False,"",view)
+		apath=view.file_name()
+		itest=apath.find("_test.go")==len(apath)-8
+		gb.doGoPrj(itest,"",view)
 		self.loading=False
 
 class GssStopCommand(sublime_plugin.WindowCommand):

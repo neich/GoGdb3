@@ -171,21 +171,15 @@ class GoBuilder:
             print "go:"+go_cmd
             nout=eout=""
             os.environ['GOPATH']=os.environ['GOPATH']+":"+self.ppath
-            if test:
-                os.chdir(os.path.join(self.ppath,"bin"))
-                (nout,eout)=subprocess.Popen([go_cmd,"test",self.pkgp,"-c","-i"],stdout=subprocess.PIPE,stderr=subprocess.PIPE).communicate()
-                # go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
-            else:
-                (nout,eout)=subprocess.Popen([go_cmd,"install",self.pkgp],stdout=subprocess.PIPE,stderr=subprocess.PIPE).communicate()
-                # go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
-            blogf=open(self.nlogp,'w')
-            blogf.write(nout)
-            blogf.flush()
-            blogf.close()
-            blogf=open(self.elogp,'w')
-            blogf.write(eout)
-            blogf.flush()
-            blogf.close()
+            with open(self.nlogp,'w') as nlout:
+                with open(self.elogp,'w') as elout:
+                    if test:
+                        os.chdir(os.path.join(self.ppath,"bin"))
+                        subprocess.Popen([go_cmd,"test",self.pkgp,"-c","-i"],stdout=nlout,stderr=elout).communicate()
+                        # go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
+                    else:
+                        subprocess.Popen([go_cmd,"install",self.pkgp],stdout=nlout,stderr=elout).communicate()
+                        # go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
         except:
             print sys.exc_info()
         if os.path.exists(self.nlogp) and os.path.getsize(self.nlogp)>0:
