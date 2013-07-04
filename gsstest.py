@@ -1,7 +1,7 @@
 
 import sys
 import os
-gswd=os.path.join(os.path.dirname(os.getcwd()),"GoSublime/gosubl")
+gswd=os.path.join(os.path.dirname(os.getcwd()),"GoSublime")
 sys.path.append(gswd)
 from gosubl import gs
 from gosubl import mg9
