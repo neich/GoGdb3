@@ -143,14 +143,17 @@ class GoBuilder:
             sublime.status_message("package name not found!")
             return False
         print "pkgn:"+self.pkgn
+        self.binf=os.path.join(self.ppath,"bin")
+        if not os.path.exists(self.binf):
+            os.makedirs(self.binf)
         if test:
-            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn+".test")
+            self.binp=os.path.join(self.binf,self.pkgn+".test")
             if trun is None:
                 self.args=""
             else:
                 self.args=trun
         else:
-            self.binp=os.path.join(self.ppath,"bin/"+self.pkgn)
+            self.binp=os.path.join(self.binf,self.pkgn)
             self.args=get_setting("rargs", "", view)
         print "binp:"+self.binp
         print "args:"+self.args
@@ -158,7 +161,7 @@ class GoBuilder:
             os.remove(self.binp)
             if os.path.exists(self.binp):
                 sublime.status_message("clean error!")
-                return False
+                return Falses
         self.buildp=self.ppath+"/build"
         self.elogp=self.ppath+"/build/err.log"
         self.nlogp=self.ppath+"/build/build.log"
@@ -166,7 +169,8 @@ class GoBuilder:
             os.makedirs(self.buildp)
     def doGoPrj(self,test,trun,view):
         self.initEnv(test,trun,view)
-        try:
+        # try:
+        def buildExectable():
             go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
             print "go:"+go_cmd
             nout=eout=""
@@ -174,14 +178,15 @@ class GoBuilder:
             with open(self.nlogp,'w') as nlout:
                 with open(self.elogp,'w') as elout:
                     if test:
-                        os.chdir(os.path.join(self.ppath,"bin"))
+                        os.chdir(self.binf)
                         subprocess.Popen([go_cmd,"test",self.pkgp,"-c","-i"],stdout=nlout,stderr=elout).communicate()
                         # go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
                     else:
                         subprocess.Popen([go_cmd,"install",self.pkgp],stdout=nlout,stderr=elout).communicate()
                         # go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
-        except:
-            print sys.exc_info()
+        # except:
+        #     print sys.exc_info()
+        buildExectable()
         if os.path.exists(self.nlogp) and os.path.getsize(self.nlogp)>0:
             view.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'focus_view':False,'wd': project_pathv(view)})
         if os.path.exists(self.elogp) and os.path.getsize(self.elogp)>0:
