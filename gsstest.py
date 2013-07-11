@@ -9,14 +9,21 @@ from sublimegdb import project_path
 from sublimegdb import project_pathv
 from sublimegdb import pkg_pathv
 from sublimegdb import GoBuilder
+from sublimegdb import GDBView
+from sublimegdb import get_setting
 import re
 import sublime
 import sublime_plugin
+import threading 
+import subprocess
+import select
+import time
 
 DOMAIN = 'GssTest'
 
 TEST_PAT = re.compile(r'^((Test|Example|Benchmark)\w*)')
-
+run_view=GDBView("Console", settingsprefix=None)
+run_thr=None
 def stop_task(win):
 	aview=win.active_view()
 	apath=aview.file_name()
@@ -28,6 +35,26 @@ def stop_task(win):
 			if t["message"] and t["message"].find(gb.sbinp())>0:
 				if t["cancel"]:
 					t["cancel"]()
+
+def runConsole(gb):
+	global run_view
+	global run_thr
+	aview=sublime.active_window().active_view()
+	sublime.active_window().set_layout(
+		{
+			"cols": [0.0, 1.0],
+			"rows": [0.0, 0.75, 1.0],
+			"cells": [[0, 0, 1, 1],[0, 1, 1, 2]]
+		}
+	)
+	if not run_view.is_open():
+		sublime.active_window().focus_group(1)
+		run_view.open()
+		# sublime.active_window().focus_view(aview)
+	run_thr=CmdThread(gb)
+	run_thr.aview=aview
+	run_thr.start()
+
 class GssSaveListener(sublime_plugin.EventListener):
 	def __init__(self):
 		self.loading=False
@@ -43,17 +70,62 @@ class GssSaveListener(sublime_plugin.EventListener):
 		itest=apath.find("_test.go")==len(apath)-8
 		gb.doGoPrj(itest,"",view)
 		self.loading=False
+	def on_close(self,view):
+		if view.name() is None or view.name()==run_view.view.name():
+			sublime.set_timeout(self.resetLayout, 1)
+			run_view.view=None
+			run_view.closed=True
+	def resetLayout(self):
+		sublime.active_window().set_layout(
+                    {
+                      	"cols": [0.0, 1.0],
+                        "rows": [0.0, 1.0],
+                        "cells": [[0, 0, 1, 1]]
+                    }
+            )
 
 class GssStopCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
-		return True
+		return run_thr is not None
 	def run(self):
-		stop_task(self.window)
+		global run_thr
+		if run_thr is not None:
+			run_thr.stop()
+class CmdThread(threading.Thread):
+	def __init__(self,gb):
+		threading.Thread.__init__(self)
+		self.gb=gb
+	def run(self):
+		run_view.clear()
+		self.proc = subprocess.Popen(["sh -c "+self.gb.binp+" "+self.gb.args],cwd=self.gb.ppath,
+                       shell=True,
+                       stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
+                       )
+		while True:
+			output = self.proc.stdout.readline()
+			if len(output)>0:
+				run_view.add_line(output)
+
+			if self.proc.poll() is not None:
+				break
+		global run_thr
+		run_thr=None
+		sublime.set_timeout(self.focusAview, 1)
+	def stop(self):
+		self.proc.kill()
+		run_view.add_line("process killed")
+	def focusAview(self):
+		sublime.active_window().focus_view(self.aview)
 
 class GssRunCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
-		return True
+		aview=self.window.active_view()
+		apath=aview.file_name()
+		return apath is not None and  apath.find(".go")==len(apath)-3
 	def run(self,debug=False):
+		global run_thr
+		if (run_thr is not None):
+			return
 		aview=self.window.active_view()
 		apath=aview.file_name()
 		if apath.find("_test.go")==len(apath)-8:
@@ -69,12 +141,16 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 				if t["message"] and t["message"].find(gb.sbinp())>0:
 					if t["cancel"]:
 						t["cancel"]()
-		aview.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),gb.args],'wd': project_path(self.window)})
+		runConsole(gb)
+		# aview.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),gb.args],'wd': project_path(self.window)})
 		
 class GssTestCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return gs.is_go_source_view(self.window.active_view())
 	def run(self,debug=False):
+		global run_thr
+		if (run_thr is not None):
+			return
 		def f(res, err):
 			if err:
 				gs.notify(DOMAIN, err)
@@ -122,7 +198,7 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 						if not gb.doGoPrj(True,sargs,self.window.active_view()):
 							print "build error"
 						else:
-							win.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),sargs],'wd':gb.ppath })
+							runConsole(gb)
 
 			gs.show_quick_panel(ents, cb)
 
