@@ -104,7 +104,7 @@
     ,
     {
         "command": "gdb_kill",
-        "keys": ["super+alt+k"]
+        "keys": ["super+ctrl+k"]
     }
     ,
     {
