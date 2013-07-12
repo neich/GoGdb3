@@ -89,6 +89,10 @@
         }
     },
     {
+        "caption": "GoGdb: Stop Debug",
+        "command": "gdb_kill"
+    },
+    {
         "caption": "GoGdb: Run Test",
         "command": "gss_test",
         "args":{

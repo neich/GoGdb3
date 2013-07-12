@@ -99,7 +99,12 @@
     ,
     {
         "command": "gss_stop",
-        "keys": ["ctrl+shift+k"]
+        "keys": ["super+shift+k"]
+    }
+    ,
+    {
+        "command": "gdb_kill",
+        "keys": ["super+alt+k"]
     }
     ,
     {

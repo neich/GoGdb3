@@ -103,6 +103,11 @@
     }
     ,
     {
+        "command": "gdb_kill",
+        "keys": ["super+alt+k"]
+    }
+    ,
+    {
         "command": "gss_test",
         "keys": ["super+shift+o"],
         "args":{

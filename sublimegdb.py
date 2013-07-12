@@ -31,6 +31,7 @@ import traceback
 import os
 import sys
 import re
+import signal
 try:
     import Queue
     from resultparser import parse_result_line
@@ -125,20 +126,20 @@ class GoBuilder:
         return val
     #test:if debug test.
     #trun:test arguments.
-    # win:sublime window.
-    #view:target view.
-    def initEnv(self,test,trun,view):
-        self.ppath=project_pathv(view)
+    #tview:target view.
+    #lview:the log view(GDBView)
+    def initEnv(self,test,trun,tview,lview):
+        self.ppath=project_pathv(tview)
         if self.ppath=="":
             sublime.status_message("project not found!")
             return False
         print "ppath:"+self.ppath
-        self.pkgp=pkg_pathv(self.ppath,view)
+        self.pkgp=pkg_pathv(self.ppath,tview)
         if self.pkgp=="":
             sublime.status_message("package path not found!")
             return False
         print "pkgp:"+self.pkgp
-        self.pkgn=pkg_namev(view)
+        self.pkgn=pkg_namev(tview)
         if self.pkgn=="":
             sublime.status_message("package name not found!")
             return False
@@ -154,7 +155,7 @@ class GoBuilder:
                 self.args=trun
         else:
             self.binp=os.path.join(self.binf,self.pkgn)
-            self.args=get_setting("rargs", "", view)
+            self.args=get_setting("rargs", "", tview)
         print "binp:"+self.binp
         print "args:"+self.args
         if os.path.exists(self.binp):
@@ -162,41 +163,96 @@ class GoBuilder:
             if os.path.exists(self.binp):
                 sublime.status_message("clean error!")
                 return Falses
-        self.buildp=self.ppath+"/build"
-        self.elogp=self.ppath+"/build/err.log"
-        self.nlogp=self.ppath+"/build/build.log"
-        if not os.path.exists(self.buildp):
-            os.makedirs(self.buildp)
-    def doGoPrj(self,test,trun,view):
-        self.initEnv(test,trun,view)
-        # try:
-        def buildExectable():
-            go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", view)
-            print "go:"+go_cmd
-            nout=eout=""
-            os.environ['GOPATH']=os.environ['GOPATH']+":"+self.ppath
-            with open(self.nlogp,'w') as nlout:
-                with open(self.elogp,'w') as elout:
-                    if test:
-                        os.chdir(self.binf)
-                        subprocess.Popen([go_cmd,"test",self.pkgp,"-c","-i"],stdout=nlout,stderr=elout).communicate()
-                        # go_cmd=go_cmd+" test "+self.pkgp+" -c -i > "+self.nlogp+" >& "+self.elogp
-                    else:
-                        subprocess.Popen([go_cmd,"install",self.pkgp],stdout=nlout,stderr=elout).communicate()
-                        # go_cmd=go_cmd+" install "+self.pkgp+" > "+self.nlogp+" >& "+self.elogp
-        # except:
-        #     print sys.exc_info()
-        buildExectable()
-        if os.path.exists(self.nlogp) and os.path.getsize(self.nlogp)>0:
-            view.run_command('gs9o_open', {'run': ['sh','cat',self.nlogp],'focus_view':False,'wd': project_pathv(view)})
-        if os.path.exists(self.elogp) and os.path.getsize(self.elogp)>0:
-            view.run_command('gs9o_open', {'run': ['sh','cat',self.elogp],'focus_view':False,'wd': project_pathv(view)})
-        if os.path.exists(self.binp)==False:
-            sublime.status_message("build error!")
-            return False
-        return True
+        self.lview=lview
+        self.test=test;
+        self.tview=tview
+        self.rthr=None
+        self.bthr=None
+    def bstop(self):
+        if self.bthr is not None and self.bthr.running:
+            self.bthr.stop()
+    def build(self,wait=False):
+        os.environ['GOPATH']=os.environ['GOPATH']+":"+self.ppath
+        if self.test:
+            self.bthr=CmdThread(self.bcmds(),self.binf,self.tview,self.lview)
+        else:
+            self.bthr=CmdThread(self.bcmds(),self.ppath,self.tview,self.lview)
+        self.bthr.start()
+        if wait:
+            self.bthr.join()
+            if os.path.exists(self.binp)==False:
+                self.lview.add_line("build error\n")
+                return False
+            return True
+        else:
+            return True
     def sbinp(self):
         return self.binp.replace(self.ppath+"/","")
+    def rcmds(self):
+        return self.binp+" "+self.args
+    def bcmds(self):
+        go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", self.tview)
+        cmd=""
+        if self.test:
+            cmd=go_cmd+" test "+self.pkgp+" -c "+" -i "
+        else:
+            cmd=go_cmd+" install "+self.pkgp
+        return cmd
+    def showLView(self):
+        aview=sublime.active_window().active_view()
+        sublime.active_window().set_layout(
+            {
+                "cols": [0.0, 1.0],
+                "rows": [0.0, 0.75, 1.0],
+                "cells": [[0, 0, 1, 1],[0, 1, 1, 2]]
+            }
+        )
+        if not self.lview.is_open():
+            sublime.active_window().focus_group(1)
+            self.lview.open()
+    def rstop(self):
+        if self.rthr is not None and self.rthr.running:
+            self.rthr.stop()
+    def run(self):
+        self.showLView()
+        if not self.build(True):
+            return
+            # sublime.active_window().focus_view(aview)
+        self.rthr=CmdThread(self.rcmds(),self.ppath,self.tview,self.lview)
+        self.rthr.start()
+    def is_running(self):
+        return (self.bthr is not None and self.bthr.running) or (self.rthr is not None and self.rthr.running)
+
+class CmdThread(threading.Thread):
+    def __init__(self,cmd,cwd,tview,lview):
+        threading.Thread.__init__(self)
+        self.cmd=cmd
+        self.cwd=cwd
+        self.tview=tview
+        self.lview=lview
+    def run(self):
+        self.running=True
+        self.lview.clear()
+        os.chdir(self.cwd)
+        self.proc = subprocess.Popen([self.cmd],cwd=self.cwd,
+                       shell=True,
+                       stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
+                       )
+        while True:
+            output = self.proc.stdout.readline()
+            if len(output)>0:
+                self.lview.add_line(output)
+
+            if self.proc.poll() is not None:
+                break
+        sublime.set_timeout(self.focusAview, 1)
+        self.running=False
+    def stop(self):
+        self.proc.kill()
+        self.lview.add_line("process killed")
+    def focusAview(self):
+        sublime.active_window().focus_view(self.tview)
+
 def expand_path(value, window):
     if window is None:
         # Views can apparently be window less, in most instances getting
@@ -1324,6 +1380,7 @@ class GDBSessionView(GDBView):
 
 gdb_session_view = GDBSessionView()
 gdb_console_view = GDBView("GDB Console", settingsprefix="console")
+n_console_view=GDBView("Console", settingsprefix=None)
 gdb_variables_view = GDBVariablesView()
 gdb_callstack_view = GDBCallstackView()
 gdb_register_view = GDBRegisterView()
@@ -1666,9 +1723,9 @@ def is_running():
 class GdbInput(sublime_plugin.WindowCommand):
     def run(self):
         show_input()
-
+gdb_builder=None
 class GdbLaunch(sublime_plugin.WindowCommand):
-    def run(self,test=None,trun=None):
+    def run(self,test=False,trun=""):
         global gdb_process
         global gdb_run_status
         global gdb_bkp_window
@@ -1677,13 +1734,15 @@ class GdbLaunch(sublime_plugin.WindowCommand):
         global gdb_shutting_down
         global DEBUG
         global DEBUG_FILE
+        global gdb_builder
         view = self.window.active_view()
         DEBUG = get_setting("debug", False, view)
         DEBUG_FILE = expand_path(get_setting("debug_file", "stdout", view), self.window)
         gprj=get_setting("go_project", False, view)
-        gb=GoBuilder()
+        gdb_builder=GoBuilder()
         if gprj:
-            if not gb.doGoPrj(test,trun,view):
+            gdb_builder.initEnv(test,"",self.window.active_view(),n_console_view)
+            if not gdb_builder.build(True):
                 return;
         if DEBUG:
             print("Will write debug info to file: %s" % DEBUG_FILE)
@@ -1693,8 +1752,8 @@ class GdbLaunch(sublime_plugin.WindowCommand):
                 # backwards compatibility for when the commandline was a list
                 commandline = " ".join(commandline)
             if gprj:
-                commandline = gb.enval(commandline, self.window)
-                path = gb.enval(get_setting("workingdir", "/tmp", view), self.window)
+                commandline = gdb_builder.enval(commandline, self.window)
+                path = gdb_builder.enval(get_setting("workingdir", "/tmp", view), self.window)
             else:
                 commandline = expand_path(commandline, self.window)
                 path = expand_path(get_setting("workingdir", "/tmp", view), self.window)
@@ -1758,8 +1817,8 @@ It seems you're not running gdb with the "mi" interpreter. Please add
             gdb_breakpoint_view.sync_breakpoints()
             gdb_run_status = "running"
 
-            run_cmd(get_setting("exec_cmd", "-exec-run"), True)
-
+            ress=run_cmd(get_setting("exec_cmd", "-exec-run"), True)
+            print "ssssssss",ress
             show_input()
         else:
             sublime.status_message("GDB is already running!")
@@ -1798,6 +1857,28 @@ class GdbExit(sublime_plugin.WindowCommand):
     def is_visible(self):
         return is_running()
 
+class GdbKill(sublime_plugin.WindowCommand):
+    def run(self):
+        global gdb_shutting_down
+        global gdb_builder
+        gdb_shutting_down = True
+        p = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
+        out, err = p.communicate()
+        for line in out.splitlines():
+            if gdb_builder.binp in line:
+                pid = int(line.split(None, 2)[1])
+                if pid != gdb_process.pid:
+                    os.kill(pid, signal.SIGKILL)
+        wait_until_stopped()
+        run_cmd("-gdb-exit", True)
+
+    def is_enabled(self):
+        global gdb_builder
+        return is_running() and gdb_builder is not None
+
+    def is_visible(self):
+        global gdb_builder
+        return is_running() and gdb_builder is not None
 
 class GdbPause(sublime_plugin.WindowCommand):
     def run(self):
