@@ -247,6 +247,7 @@ class CmdThread(threading.Thread):
                 break
         sublime.set_timeout(self.focusAview, 1)
         self.running=False
+        # print "thread end"
     def stop(self):
         self.proc.kill()
         self.lview.add_line("process killed")
@@ -1866,9 +1867,10 @@ class GdbKill(sublime_plugin.WindowCommand):
         out, err = p.communicate()
         for line in out.splitlines():
             if gdb_builder.binp in line:
-                pid = int(line.split(None, 2)[1])
+                pids=line.split(None, 2)[1]
+                pid = int(pids)
                 if pid != gdb_process.pid:
-                    os.kill(pid, signal.SIGKILL)
+                    os.system("kill -9 "+pids)
         wait_until_stopped()
         run_cmd("-gdb-exit", True)
 
