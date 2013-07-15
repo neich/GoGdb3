@@ -1742,7 +1742,7 @@ class GdbLaunch(sublime_plugin.WindowCommand):
         gprj=get_setting("go_project", False, view)
         gdb_builder=GoBuilder()
         if gprj:
-            gdb_builder.initEnv(test,"",self.window.active_view(),n_console_view)
+            gdb_builder.initEnv(test,trun,self.window.active_view(),n_console_view)
             if not gdb_builder.build(True):
                 return;
         if DEBUG:
