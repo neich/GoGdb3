@@ -180,6 +180,7 @@ class BufConsole:
         # self.logs.append(line)
     def clear(self,tview):
         def mcls():
+            self.CheckShowConsoleView(tview.window())
             wid=tview.window().id()
             if self.logs.has_key(wid):
                 self.logs[wid]=[]
