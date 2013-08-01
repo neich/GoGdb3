@@ -116,6 +116,8 @@ def pkg_namev(aview):
     afile=aview.file_name()
     apath=os.path.dirname(afile)
     return os.path.basename(apath)
+# def focusFirstGroup():
+#     sublime.active_window().focus_group(0)
 class ConsoleView(object):
     def __init__(self):
         self.name="Console"
@@ -147,6 +149,7 @@ class BufConsole:
     def __init__(self):
         self.logs={}
         self.listeners={}
+        # sublime.set_timeout(focusFirstGroup,3000)
     def ShowConsoleView(self,win):
         win.focus_group(1)
         cview=ConsoleView()

@@ -24,8 +24,7 @@ import time
 DOMAIN = 'GssTest'
 
 TEST_PAT = re.compile(r'^((Test|Example|Benchmark)\w*)')
-g_builder=None
-
+w_builders={}
 class GssShowConsole(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		print n_console_view.listener(self.window)
@@ -76,22 +75,33 @@ class GssSaveListener(sublime_plugin.EventListener):
 
 class GssStopCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
+		global w_builders
+		g_builder=None
+		wid=self.window.id()
+		if w_builders.has_key(wid):
+			g_builder=w_builders[wid]
 		return g_builder is not None and g_builder.is_running()
 	def run(self):
-		global g_builder
+		global w_builders
+		g_builder=None
+		wid=self.window.id()
+		if w_builders.has_key(wid):
+			g_builder=w_builders[wid]
 		if g_builder is not None:
 			g_builder.bstop()
 			g_builder.rstop()
-
 class GssRunCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		aview=self.window.active_view()
 		apath=aview.file_name()
 		return apath is not None and  apath.find(".go")==len(apath)-3
 	def run(self,debug=False):
-		global g_builder
+		global w_builders
+		g_builder=None
+		wid=self.window.id()
+		if w_builders.has_key(wid):
+			g_builder=w_builders[wid]
 		if (g_builder is not None) and (g_builder.is_running()):
-			g_builder.showLView()
 			return
 		aview=self.window.active_view()
 		apath=aview.file_name()
@@ -100,6 +110,7 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 			return
 		g_builder=GoBuilder()
 		g_builder.initEnv(False,"",self.window.active_view(),n_console_view)
+		w_builders[wid]=g_builder
 		g_builder.run()
 		# aview.run_command('gs9o_open', {'run': ['sh',gb.sbinp(),gb.args],'wd': project_path(self.window)})
 		
@@ -107,7 +118,11 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return gs.is_go_source_view(self.window.active_view())
 	def run(self,debug=False):
-		global g_builder
+		global w_builders
+		g_builder=None
+		wid=self.window.id()
+		if w_builders.has_key(wid):
+			g_builder=w_builders[wid]
 		if (g_builder is not None) and (g_builder.is_running()):
 			g_builder.showLView()
 			return
