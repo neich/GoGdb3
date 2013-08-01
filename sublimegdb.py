@@ -21,8 +21,6 @@ freely, subject to the following restrictions:
    distribution.
 """
 import sys 
-reload(sys) 
-sys.setdefaultencoding('UTF-8')
 import sublime
 import sublime_plugin
 import subprocess
@@ -129,7 +127,6 @@ class ConsoleView(object):
             for view in self.win.views_in_group(1):
                 if view.name()=="Console":
                     self.view=view
-        print self.view
         if self.view==None:
             self.view = self.win.new_file()
         self.view.set_name(self.name)
@@ -332,14 +329,14 @@ class CmdThread(threading.Thread):
                        )
         while True:
             output = self.proc.stdout.readline()
-            if len(output)>0:
+            olen=len(output)
+            if olen>0:
                 self.lview.add_line(self.tview,output)
 
-            if self.proc.poll() is not None:
+            if self.proc.poll() is not None and olen<1:
                 break
         sublime.set_timeout(self.focusAview, 1)
         self.running=False
-        # print "thread end"
     def stop(self):
         self.proc.kill()
         self.lview.add_line(self.tview,"process killed")
