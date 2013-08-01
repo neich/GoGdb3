@@ -20,6 +20,9 @@ freely, subject to the following restrictions:
    3. This notice may not be removed or altered from any source
    distribution.
 """
+import sys 
+reload(sys) 
+sys.setdefaultencoding('UTF-8')
 import sublime
 import sublime_plugin
 import subprocess
@@ -29,7 +32,6 @@ import threading
 import time
 import traceback
 import os
-import sys
 import re
 import signal
 try:

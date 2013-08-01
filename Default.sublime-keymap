@@ -119,9 +119,4 @@
         "command": "gss_show_console",
         "keys": ["super+shift+c"]
     }
-    ,
-    {
-        "command": "gss_show_debug",
-        "keys": ["super+shift+p"]
-    }
 ]
