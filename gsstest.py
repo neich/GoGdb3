@@ -26,6 +26,22 @@ DOMAIN = 'GssTest'
 TEST_PAT = re.compile(r'^((Test|Example|Benchmark)\w*)')
 g_builder=None
 
+class GssShowConsole(sublime_plugin.WindowCommand):
+	def is_enabled(self):
+		print n_console_view.listener(self.window)
+		return n_console_view.listener(self.window)==None
+	def run(self):
+		sublime.active_window().set_layout(
+			{
+			"cols": [0.0, 1.0],
+			"rows": [0.0, 0.75, 1.0],
+			"cells": [[0, 0, 1, 1],[0, 1, 1, 2]]
+			})
+		n_console_view.ShowConsoleView(self.window)
+class GssShowDebug(sublime_plugin.WindowCommand):
+	def run(self):
+		print n_console_view.logs
+		print n_console_view.listeners
 class GssSaveListener(sublime_plugin.EventListener):
 	def __init__(self):
 		self.loading=False
@@ -41,14 +57,14 @@ class GssSaveListener(sublime_plugin.EventListener):
 		global g_builder
 		g_builder=GoBuilder()
 		g_builder.initEnv(itest,"",view,n_console_view)
-		g_builder.showLView()
+		# g_builder.showLView()
 		g_builder.build(False)
 		self.loading=False
 	def on_close(self,view):
-		if view.name() is None or view.name()==n_console_view.view.name():
+		if view.name()=="Console":
+			n_console_view.rm_listener(sublime.active_window())
 			sublime.set_timeout(self.resetLayout, 1)
 			# n_console_view.view=None
-			n_console_view.closed=True
 	def resetLayout(self):
 		sublime.active_window().set_layout(
                     {

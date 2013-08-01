@@ -116,6 +116,94 @@ def pkg_namev(aview):
     afile=aview.file_name()
     apath=os.path.dirname(afile)
     return os.path.basename(apath)
+class ConsoleView(object):
+    def __init__(self):
+        self.name="Console"
+        self.win=sublime.active_window()
+        self.view=None
+        if self.win.num_groups()>1:
+            for view in self.win.views_in_group(1):
+                if view.name()=="Console":
+                    self.view=view
+        print self.view
+        if self.view==None:
+            self.view = self.win.new_file()
+        self.view.set_name(self.name)
+        self.view.set_scratch(True)
+        self.view.set_read_only(True)
+        self.view.settings().set('command_mode', False)
+    def add_line(self,tview,line):
+        self.view.run_command("gdb_view_add_line", {"line": line, "doScroll": True})
+    def clear(self,tview):
+        self.view.run_command("gdb_view_clear")
+    def init(self,lines):
+        self.view.run_command("gdb_view_clear")
+        ldata=""
+        for line in lines:
+            ldata=ldata+line
+        self.view.run_command("gdb_view_add_line", {"line": ldata, "doScroll": True})
+
+class BufConsole:
+    def __init__(self):
+        self.logs={}
+        self.listeners={}
+    def ShowConsoleView(self,win):
+        win.focus_group(1)
+        cview=ConsoleView()
+        self.set_listener(win,cview)
+        win.focus_group(0)
+    def CheckShowConsoleView(self,win):
+        if not self.listener(win)==None:
+            return
+        tview=None
+        if win.num_groups()>1:
+            for view in win.views_in_group(1):
+                if view.name()=="Console":
+                    tview=view
+        if tview==None:
+            return
+        self.ShowConsoleView(win)
+    def add_line(self,tview,line):
+        def addl():
+            self.CheckShowConsoleView(tview.window())
+            wid=tview.window().id()
+            if not self.logs.has_key(wid):
+                self.logs[wid]=[]
+            wls=self.logs[wid]
+            wls.append(line)
+            if self.listeners.has_key(wid):
+                self.listeners[wid].add_line(tview,line)
+        sublime.set_timeout(addl,0)
+        # print "sdd"+tview.window()
+        # self.logs.append(line)
+    def clear(self,tview):
+        def mcls():
+            wid=tview.window().id()
+            if self.logs.has_key(wid):
+                self.logs[wid]=[]
+            if self.listeners.has_key(wid):
+                self.listeners[wid].clear(tview)
+        sublime.set_timeout(mcls,0)
+    def wlogs(self,win):
+        wid=win.id()
+        if self.logs.has_key(wid):
+            return self.logs[wid]
+        else:
+            return []
+    def set_listener(self,win,ls):
+        wid=win.id()
+        self.listeners[wid]=ls
+        ls.init(self.wlogs(win))
+    def rm_listener(self,win):
+        wid=win.id()
+        if self.listeners.has_key(wid):
+            del self.listeners[wid]
+    def listener(self,win):
+        wid=win.id()
+        if self.listeners.has_key(wid):
+            return self.listeners[wid]
+        else:
+            return None
 class GoBuilder:
     def enval(self,val,window):
         val=val.replace("${ppath}",self.ppath)
@@ -198,23 +286,22 @@ class GoBuilder:
         else:
             cmd=go_cmd+" install "+self.pkgp
         return cmd
-    def showLView(self):
-        aview=sublime.active_window().active_view()
-        sublime.active_window().set_layout(
-            {
-                "cols": [0.0, 1.0],
-                "rows": [0.0, 0.75, 1.0],
-                "cells": [[0, 0, 1, 1],[0, 1, 1, 2]]
-            }
-        )
-        if not self.lview.is_open():
-            sublime.active_window().focus_group(1)
-            self.lview.open()
+    # def showLView(self):
+    #     # aview=sublime.active_window().active_view()
+    #     sublime.active_window().set_layout(
+    #         {
+    #             "cols": [0.0, 1.0],
+    #             "rows": [0.0, 0.75, 1.0],
+    #             "cells": [[0, 0, 1, 1],[0, 1, 1, 2]]
+    #         }
+    #     )
+    #     if not self.lview.is_open(self.tview):
+    #         sublime.active_window().focus_group(1)
+    #         self.lview.open(self.tview)
     def rstop(self):
         if self.rthr is not None and self.rthr.running:
             self.rthr.stop()
     def run(self):
-        self.showLView()
         if not self.build(True):
             return
             # sublime.active_window().focus_view(aview)
@@ -232,7 +319,7 @@ class CmdThread(threading.Thread):
         self.lview=lview
     def run(self):
         self.running=True
-        self.lview.clear()
+        self.lview.clear(self.tview)
         os.chdir(self.cwd)
         self.proc = subprocess.Popen([self.cmd],cwd=self.cwd,
                        shell=True,
@@ -241,7 +328,7 @@ class CmdThread(threading.Thread):
         while True:
             output = self.proc.stdout.readline()
             if len(output)>0:
-                self.lview.add_line(output)
+                self.lview.add_line(self.tview,output)
 
             if self.proc.poll() is not None:
                 break
@@ -250,7 +337,7 @@ class CmdThread(threading.Thread):
         # print "thread end"
     def stop(self):
         self.proc.kill()
-        self.lview.add_line("process killed")
+        self.lview.add_line(self.tview,"process killed")
     def focusAview(self):
         sublime.active_window().focus_view(self.tview)
 
@@ -1381,7 +1468,7 @@ class GDBSessionView(GDBView):
 
 gdb_session_view = GDBSessionView()
 gdb_console_view = GDBView("GDB Console", settingsprefix="console")
-n_console_view=GDBView("Console", settingsprefix=None)
+n_console_view=BufConsole()
 gdb_variables_view = GDBVariablesView()
 gdb_callstack_view = GDBCallstackView()
 gdb_register_view = GDBRegisterView()
