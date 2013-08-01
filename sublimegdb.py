@@ -272,7 +272,7 @@ class GoBuilder:
         if wait:
             self.bthr.join()
             if os.path.exists(self.binp)==False:
-                self.lview.add_line("build error\n")
+                self.lview.add_line(self.tview,"build error\n")
                 return False
             return True
         else:
