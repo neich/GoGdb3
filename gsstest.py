@@ -53,9 +53,15 @@ class GssSaveListener(sublime_plugin.EventListener):
 			return
 		apath=view.file_name()
 		itest=apath.find("_test.go")==len(apath)-8
-		global g_builder
+		wid=view.window().id()
 		g_builder=GoBuilder()
-		g_builder.initEnv(itest,"",view,n_console_view)
+		o_b=None
+		if w_builders.has_key(wid):
+			o_b=w_builders[wid]
+		if o_b is not None and o_b.is_running():
+			g_builder.initEnv(itest,"",view,None)
+		else:
+			g_builder.initEnv(itest,"",view,n_console_view)
 		# g_builder.showLView()
 		g_builder.build(False)
 		self.loading=False

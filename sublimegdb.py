@@ -322,7 +322,8 @@ class CmdThread(threading.Thread):
         self.lview=lview
     def run(self):
         self.running=True
-        self.lview.clear(self.tview)
+        if self.lview is not None:
+            self.lview.clear(self.tview)
         os.chdir(self.cwd)
         self.proc = subprocess.Popen([self.cmd],cwd=self.cwd,
                        shell=True,
@@ -332,7 +333,8 @@ class CmdThread(threading.Thread):
             output = self.proc.stdout.readline()
             olen=len(output)
             if olen>0:
-                self.lview.add_line(self.tview,output)
+                if self.lview is not None:
+                    self.lview.add_line(self.tview,output)
 
             if self.proc.poll() is not None and olen<1:
                 break

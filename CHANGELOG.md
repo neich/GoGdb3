@@ -6,6 +6,9 @@ GoGdb Changes
 
 Note: you may need to restart Sublime Text after GoGdb updates
 
+###2013.08.01-2
+	* fix the bug that running console log will be clear after saving source file.
+	
 ###2013.08.01-1
 	* first add the changes log.
 	* new features for console view,it will auto reload when restart ST2
