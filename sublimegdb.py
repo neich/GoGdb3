@@ -197,8 +197,9 @@ class BufConsole:
             wls.append(line)
             if self.listeners.has_key(wid):
                 self.listeners[wid].add_line(tview,line)
-            if self.gs9o.has_key(wid):
-                self.gs9o[wid].add_line(tview,line)
+            else:
+                if self.gs9o.has_key(wid):
+                    self.gs9o[wid].add_line(tview,line)
         sublime.set_timeout(addl,0)
         # print "sdd"+tview.window()
         # self.logs.append(line)
@@ -210,8 +211,9 @@ class BufConsole:
                 self.logs[wid]=[]
             if self.listeners.has_key(wid):
                 self.listeners[wid].clear(tview)
-            if self.gs9o.has_key(wid):
-                self.gs9o[wid].clear(tview)
+            else:
+                if self.gs9o.has_key(wid):
+                    self.gs9o[wid].clear(tview)
         sublime.set_timeout(mcls,0)
     def wlogs(self,win):
         wid=win.id()
