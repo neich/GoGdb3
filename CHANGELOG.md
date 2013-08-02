@@ -5,7 +5,9 @@ GoGdb Changes
 
 
 Note: you may need to restart Sublime Text after GoGdb updates
-
+###2013.08.02-1
+	* adding support for showing log in gs9o build system in GoSublime plugin.
+	
 ###2013.08.01-2
 	* fix the bug that running console log will be clear after saving source file.
 	

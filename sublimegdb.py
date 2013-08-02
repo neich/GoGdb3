@@ -143,11 +143,19 @@ class ConsoleView(object):
         for line in lines:
             ldata=ldata+line
         self.view.run_command("gdb_view_add_line", {"line": ldata, "doScroll": True})
+class Gs9oConsoleView(object):
+    def add_line(self,tview,line):
+        sublime.active_window().run_command("gss_gs9o_add_line", {"line": line})
+    def clear(self,tview):
+        sublime.active_window().run_command("gss_gs9o_clear")
+    def init(self,lines):
+        v="donothing"
 
 class BufConsole:
     def __init__(self):
         self.logs={}
         self.listeners={}
+        self.gs9o={}
         # sublime.set_timeout(focusFirstGroup,3000)
     def ShowConsoleView(self,win):
         win.focus_group(1)
@@ -165,9 +173,15 @@ class BufConsole:
         if tview==None:
             return
         self.ShowConsoleView(win)
+    def CheckGs9oCView(self,win):
+        wid=win.id()
+        if not self.gs9o.has_key(wid):
+            gl=Gs9oConsoleView()
+            self.gs9o[wid]=gl
     def add_line(self,tview,line):
         def addl():
             self.CheckShowConsoleView(tview.window())
+            self.CheckGs9oCView(tview.window())
             wid=tview.window().id()
             if not self.logs.has_key(wid):
                 self.logs[wid]=[]
@@ -175,6 +189,8 @@ class BufConsole:
             wls.append(line)
             if self.listeners.has_key(wid):
                 self.listeners[wid].add_line(tview,line)
+            if self.gs9o.has_key(wid):
+                self.gs9o[wid].add_line(tview,line)
         sublime.set_timeout(addl,0)
         # print "sdd"+tview.window()
         # self.logs.append(line)
@@ -186,6 +202,8 @@ class BufConsole:
                 self.logs[wid]=[]
             if self.listeners.has_key(wid):
                 self.listeners[wid].clear(tview)
+            if self.gs9o.has_key(wid):
+                self.gs9o[wid].clear(tview)
         sublime.set_timeout(mcls,0)
     def wlogs(self,win):
         wid=win.id()

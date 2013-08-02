@@ -5,6 +5,7 @@ gswd=os.path.join(os.path.dirname(os.getcwd()),"GoSublime")
 sys.path.append(gswd)
 from gosubl import gs
 from gosubl import mg9
+import gs9o
 from sublimegdb import project_path
 from sublimegdb import project_pathv
 from sublimegdb import pkg_pathv
@@ -37,10 +38,34 @@ class GssShowConsole(sublime_plugin.WindowCommand):
 			"cells": [[0, 0, 1, 1],[0, 1, 1, 2]]
 			})
 		n_console_view.ShowConsoleView(self.window)
-class GssShowDebug(sublime_plugin.WindowCommand):
-	def run(self):
-		print n_console_view.logs
-		print n_console_view.listeners
+class GssShowDebug(sublime_plugin.TextCommand):
+	def run(self,edit):
+		print "runnnnn"
+class GssGs9oAddLine(sublime_plugin.TextCommand):
+	def run(self,edit,line):
+		win = self.view.window()
+		wid = win.id()
+		wd=gs9o.active_wd(win)
+		id = gs9o._wdid(wd)
+		st = gs9o.stash.setdefault(wid, {})
+		v = st.get(id)
+		if v is None:
+			v = win.get_output_panel(id)
+			st[id] = v
+		v.insert(edit, v.size(), line)
+		v.show(v.size())
+class GssGs9oClear(sublime_plugin.TextCommand):
+	def run(self,edit):
+		win = self.view.window()
+		wid = win.id()
+		wd=gs9o.active_wd(win)
+		id = gs9o._wdid(wd)
+		st = gs9o.stash.setdefault(wid, {})
+		v = st.get(id)
+		if v is None:
+			v = win.get_output_panel(id)
+			st[id] = v
+		v.replace(edit,sublime.Region(0, v.size()),"")
 class GssSaveListener(sublime_plugin.EventListener):
 	def __init__(self):
 		self.loading=False
