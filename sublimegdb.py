@@ -32,6 +32,7 @@ import traceback
 import os
 import re
 import signal
+import platform
 try:
     import Queue
     from resultparser import parse_result_line
@@ -61,7 +62,13 @@ except:
 
     import queue as Queue
     from GoGdb.resultparser import parse_result_line
-
+def exec_ext():
+    if is_windows():
+        return ".exe"
+    else:
+        return ""
+def is_windows():
+    return platform.system()=="Windows"
 def get_setting(key, default=None, view=None):
     try:
         if view is None:
@@ -104,8 +111,9 @@ def pkg_pathv(ppath,aview):
     afile=aview.file_name()
     apath=os.path.dirname(afile)
     spath=os.path.join(ppath,"src")
-    if apath.find(spath+"/")>-1:
-        return apath.replace(spath+"/","")
+    sspath=spath+os.sep
+    if apath.find(sspath)>-1:
+        return apath.replace(sspath,"")
     return ""
 def pkg_name(window):
     if window is None:
@@ -257,14 +265,15 @@ class GoBuilder:
         if not os.path.exists(self.binf):
             os.makedirs(self.binf)
         if test:
-            self.binp=os.path.join(self.binf,self.pkgn+".test")
+            self.binp=os.path.join(self.binf,self.pkgn+".test"+exec_ext())
             if trun is None:
                 self.args=""
             else:
                 self.args=trun
         else:
-            self.binp=os.path.join(self.binf,self.pkgn)
+            self.binp=os.path.join(self.binf,self.pkgn+exec_ext())
             self.args=get_setting("rargs", "", tview)
+        #self.args="-test.run=\"^TestShow\\$\""
         print "binp:"+self.binp
         print "args:"+self.args
         if os.path.exists(self.binp):
@@ -281,7 +290,9 @@ class GoBuilder:
         if self.bthr is not None and self.bthr.running:
             self.bthr.stop()
     def build(self,wait=False):
-        os.environ['GOPATH']=os.environ['GOPATH']+":"+self.ppath
+        ogpath=os.environ['GOPATH']
+        if ogpath.find(self.ppath)==-1:
+            os.environ['GOPATH']=ogpath+";"+self.ppath
         if self.test:
             self.bthr=CmdThread(self.bcmds(),self.binf,self.tview,self.lview)
         else:
@@ -296,11 +307,11 @@ class GoBuilder:
         else:
             return True
     def sbinp(self):
-        return self.binp.replace(self.ppath+"/","")
+        return self.binp.replace(self.ppath+os.sep,"")
     def rcmds(self):
         return self.binp+" "+self.args
     def bcmds(self):
-        go_cmd=get_setting("go_cmd", "/usr/local/go/bin/go", self.tview)
+        go_cmd=get_setting("go_cmd", "go", self.tview)
         cmd=""
         if self.test:
             cmd=go_cmd+" test "+self.pkgp+" -c "+" -i "
@@ -359,7 +370,8 @@ class CmdThread(threading.Thread):
         sublime.set_timeout(self.focusAview, 1)
         self.running=False
     def stop(self):
-        self.proc.kill()
+        print self.proc.kill()
+        print self.proc.terminate()
         self.lview.add_line(self.tview,"process killed")
     def focusAview(self):
         sublime.active_window().focus_view(self.tview)

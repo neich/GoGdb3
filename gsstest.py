@@ -19,7 +19,6 @@ import sublime
 import sublime_plugin
 import threading 
 import subprocess
-import select
 import time
 
 DOMAIN = 'GssTest'
@@ -188,7 +187,7 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 				if k.startswith('Benchmark'):
 					args[k] = ['-test.run=none', '-test.bench="^%s$"' % k]
 				else:
-					args[k] = ['-test.run="^%s$"' % k]
+					args[k] = ['-test.run=^%s$' % k]
 
 			def cb(i, win):
 				if i >= 0:
