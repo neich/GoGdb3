@@ -370,8 +370,12 @@ class CmdThread(threading.Thread):
         sublime.set_timeout(self.focusAview, 1)
         self.running=False
     def stop(self):
-        print self.proc.kill()
-        print self.proc.terminate()
+        if is_windows():
+            ct=CmdThread("taskkill /PID %d"%self.proc.pid,self.cwd,self.tview,self.lview)
+            ct.start()
+            ct.join()
+        else:
+            self.proc.kill()
         self.lview.add_line(self.tview,"process killed")
     def focusAview(self):
         sublime.active_window().focus_view(self.tview)
