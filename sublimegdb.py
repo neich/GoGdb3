@@ -293,7 +293,10 @@ class GoBuilder:
     def build(self,wait=False):
         ogpath=os.environ['GOPATH']
         if ogpath.find(self.ppath)==-1:
-            os.environ['GOPATH']=ogpath+";"+self.ppath
+            if is_windows():
+                os.environ['GOPATH']=ogpath+";"+self.ppath
+            else:
+                os.environ['GOPATH']=ogpath+":"+self.ppath
         if self.test:
             self.bthr=CmdThread(self.bcmds(),self.binf,self.tview,self.lview)
         else:
