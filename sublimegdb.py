@@ -250,6 +250,7 @@ class GoBuilder:
         if self.ppath=="":
             sublime.status_message("project not found!")
             return False
+        self.pname=os.path.basename(self.ppath)
         print "ppath:"+self.ppath
         self.pkgp=pkg_pathv(self.ppath,tview)
         if self.pkgp=="":
@@ -271,7 +272,7 @@ class GoBuilder:
             else:
                 self.args=trun
         else:
-            self.binp=os.path.join(self.binf,self.pkgn+exec_ext())
+            self.binp=os.path.join(self.binf,self.pname+exec_ext())
             self.args=get_setting("rargs", "", tview)
         #self.args="-test.run=\"^TestShow\\$\""
         print "binp:"+self.binp
@@ -316,7 +317,7 @@ class GoBuilder:
         if self.test:
             cmd=go_cmd+" test "+self.pkgp+" -c "+" -i "
         else:
-            cmd=go_cmd+" install "+self.pkgp
+            cmd=go_cmd+" build -o "+self.binp+" "+self.pkgp
         return cmd
     # def showLView(self):
     #     # aview=sublime.active_window().active_view()
@@ -1347,6 +1348,8 @@ class GDBBreakpoint(object):
         break_cmd = "-break-insert"
         if get_setting("debug_ext") == True:
             break_cmd += " -f"
+        if is_windows():
+            self.original_filename=self.original_filename.replace("\\","\\\\")
         if self.addr != "":
             cmd = "%s *%s" % (break_cmd, self.addr)
         else:
@@ -1989,14 +1992,19 @@ class GdbKill(sublime_plugin.WindowCommand):
         global gdb_shutting_down
         global gdb_builder
         gdb_shutting_down = True
-        p = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
-        out, err = p.communicate()
-        for line in out.splitlines():
-            if gdb_builder.binp in line:
-                pids=line.split(None, 2)[1]
-                pid = int(pids)
-                if pid != gdb_process.pid:
-                    os.system("kill -9 "+pids)
+        if is_windows():
+            ct=CmdThread("taskkill %s"%gdb_builder.pname,gdb_builder.ppath,None,None)
+            ct.start()
+            ct.join()
+        else:
+            p = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
+            out, err = p.communicate()
+            for line in out.splitlines():
+                if gdb_builder.binp in line:
+                    pids=line.split(None, 2)[1]
+                    pid = int(pids)
+                    if pid != gdb_process.pid:
+                        os.system("kill -9 "+pids)
         wait_until_stopped()
         run_cmd("-gdb-exit", True)
 
