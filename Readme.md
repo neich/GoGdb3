@@ -30,7 +30,8 @@ First,thanks quarnster's code of Gdb plugin.
 - Back in the editor, open up the command palette by pressing cmd+shift+P or ctrl+shift+P
 - Type GoGdb and open up the settings file you want to modify
 
-
+###Windows Configure
+download the gdb.
 ###Usage
 
 most of the features is sampe of <https://github.com/quarnster/SublimeGDB>,you can see it and configure by yourself.
