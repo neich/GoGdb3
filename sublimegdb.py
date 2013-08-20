@@ -1998,7 +1998,7 @@ class GdbKill(sublime_plugin.WindowCommand):
         global gdb_builder
         gdb_shutting_down = True
         if is_windows():
-            ct=CmdThread("taskkill %s"%gdb_builder.pname,gdb_builder.ppath,None,None)
+            ct=CmdThread("taskkill /F /IM %s"%gdb_builder.pname+".exe",gdb_builder.ppath,None,None)
             ct.start()
             ct.join()
         else:
