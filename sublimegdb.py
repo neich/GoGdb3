@@ -58,7 +58,7 @@ except:
         return s.encode("utf-8")
 
     def bdecode(s):
-        return s.decode("utf-8")
+        return s.decode("utf-8",'ignore')
 
     import queue as Queue
     from GoGdb.resultparser import parse_result_line
@@ -183,7 +183,7 @@ class BufConsole:
         self.ShowConsoleView(win)
     def CheckGs9oCView(self,win):
         wid=win.id()
-        if not self.gs9o.has_key(wid):
+        if not wid in self.gs9o:
             gl=Gs9oConsoleView()
             self.gs9o[wid]=gl
     def add_line(self,tview,line):
@@ -191,14 +191,14 @@ class BufConsole:
             self.CheckShowConsoleView(tview.window())
             self.CheckGs9oCView(tview.window())
             wid=tview.window().id()
-            if not self.logs.has_key(wid):
+            if not wid in self.logs:
                 self.logs[wid]=[]
             wls=self.logs[wid]
             wls.append(line)
-            if self.listeners.has_key(wid):
+            if wid in self.listeners:
                 self.listeners[wid].add_line(tview,line)
             else:
-                if self.gs9o.has_key(wid):
+                if wid in self.gs9o:
                     self.gs9o[wid].add_line(tview,line)
         sublime.set_timeout(addl,0)
         # print "sdd"+tview.window()
@@ -207,17 +207,17 @@ class BufConsole:
         def mcls():
             self.CheckShowConsoleView(tview.window())
             wid=tview.window().id()
-            if self.logs.has_key(wid):
+            if wid in self.logs:
                 self.logs[wid]=[]
-            if self.listeners.has_key(wid):
+            if wid in self.listeners:
                 self.listeners[wid].clear(tview)
             else:
-                if self.gs9o.has_key(wid):
+                if wid in self.gs9o:
                     self.gs9o[wid].clear(tview)
         sublime.set_timeout(mcls,0)
     def wlogs(self,win):
         wid=win.id()
-        if self.logs.has_key(wid):
+        if wid in self.logs:
             return self.logs[wid]
         else:
             return []
@@ -227,11 +227,11 @@ class BufConsole:
         ls.init(self.wlogs(win))
     def rm_listener(self,win):
         wid=win.id()
-        if self.listeners.has_key(wid):
+        if wid in self.listeners:
             del self.listeners[wid]
     def listener(self,win):
         wid=win.id()
-        if self.listeners.has_key(wid):
+        if wid in self.listeners:
             return self.listeners[wid]
         else:
             return None
@@ -253,17 +253,17 @@ class GoBuilder:
             sublime.status_message("project not found!")
             return False
         self.pname=os.path.basename(self.ppath)
-        print "ppath:"+self.ppath
+        print("ppath:"+self.ppath)
         self.pkgp=pkg_pathv(self.ppath,tview)
         if self.pkgp=="":
             sublime.status_message("package path not found!")
             return False
-        print "pkgp:"+self.pkgp
+        print("pkgp:"+self.pkgp)
         self.pkgn=pkg_namev(tview)
         if self.pkgn=="":
             sublime.status_message("package name not found!")
             return False
-        print "pkgn:"+self.pkgn
+        print("pkgn:"+self.pkgn)
         self.binf=os.path.join(self.ppath,"bin")
         if not os.path.exists(self.binf):
             os.makedirs(self.binf)
@@ -277,8 +277,8 @@ class GoBuilder:
             self.binp=os.path.join(self.binf,self.pname+exec_ext())
             self.args=get_setting("rargs", "", tview)
         #self.args="-test.run=\"^TestShow\\$\""
-        print "binp:"+self.binp
-        print "args:"+self.args
+        print("binp:"+self.binp)
+        print("args:"+self.args)
         if os.path.exists(self.binp):
             os.remove(self.binp)
             if os.path.exists(self.binp):
@@ -366,6 +366,7 @@ class CmdThread(threading.Thread):
                        )
         while True:
             output = self.proc.stdout.readline()
+            output = output.decode("utf-8")
             olen=len(output)
             if olen>0:
                 if self.lview is not None:
@@ -1892,8 +1893,8 @@ class GdbLaunch(sublime_plugin.WindowCommand):
             else:
                 commandline = expand_path(commandline, self.window)
                 path = expand_path(get_setting("workingdir", "/tmp", view), self.window)
-            print "workingdir:"+path
-            print "commandline:"+commandline
+            print("workingdir:"+path)
+            print("commandline:"+commandline)
             log_debug("Running: %s\n" % commandline)
             log_debug("In directory: %s\n" % path)
             gdb_process = subprocess.Popen(commandline, shell=True, cwd=path,
@@ -1953,7 +1954,7 @@ It seems you're not running gdb with the "mi" interpreter. Please add
             gdb_run_status = "running"
 
             ress=run_cmd(get_setting("exec_cmd", "-exec-run"), True)
-            print "ssssssss",ress
+            print(ress)
             show_input()
         else:
             sublime.status_message("GDB is already running!")
@@ -1998,12 +1999,13 @@ class GdbKill(sublime_plugin.WindowCommand):
         global gdb_builder
         gdb_shutting_down = True
         if is_windows():
-            ct=CmdThread("taskkill /F /IM %s"%gdb_builder.pname+".exe",gdb_builder.ppath,None,None)
+            ct=CmdThread("taskkill %s"%gdb_builder.pname,gdb_builder.ppath,None,None)
             ct.start()
             ct.join()
         else:
             p = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
             out, err = p.communicate()
+            out = out.decode("utf-8")
             for line in out.splitlines():
                 if gdb_builder.binp in line:
                     pids=line.split(None, 2)[1]

@@ -1,19 +1,14 @@
 
 import sys
 import os
-gswd=os.path.join(os.path.dirname(os.getcwd()),"GoSublime")
-sys.path.append(gswd)
-from gosubl import gs
-from gosubl import mg9
-import gs9o
-from sublimegdb import project_path
-from sublimegdb import project_pathv
-from sublimegdb import pkg_pathv
-from sublimegdb import GoBuilder
-from sublimegdb import GDBView
-from sublimegdb import get_setting
-from sublimegdb import CmdThread
-from sublimegdb import n_console_view
+from GoGdb.sublimegdb import project_path
+from GoGdb.sublimegdb import project_pathv
+from GoGdb.sublimegdb import pkg_pathv
+from GoGdb.sublimegdb import GoBuilder
+from GoGdb.sublimegdb import GDBView
+from GoGdb.sublimegdb import get_setting
+from GoGdb.sublimegdb import CmdThread
+from GoGdb.sublimegdb import n_console_view
 import re
 import sublime
 import sublime_plugin
@@ -21,13 +16,17 @@ import threading
 import subprocess
 import time
 
+def plugin_loaded():
+	from GoSublime.gosubl import gs
+	from GoSublime.gosubl import mg9
+	import gs9o
 DOMAIN = 'GssTest'
 
 TEST_PAT = re.compile(r'^((Test|Example|Benchmark)\w*)')
 w_builders={}
 class GssShowConsole(sublime_plugin.WindowCommand):
 	def is_enabled(self):
-		print n_console_view.listener(self.window)
+		print(n_console_view.listener(self.window))
 		return n_console_view.listener(self.window)==None
 	def run(self):
 		sublime.active_window().set_layout(
@@ -39,9 +38,11 @@ class GssShowConsole(sublime_plugin.WindowCommand):
 		n_console_view.ShowConsoleView(self.window)
 class GssShowDebug(sublime_plugin.TextCommand):
 	def run(self,edit):
-		print "runnnnn"
+		"这是中文".encode("utf-8").decode("utf-8")
+		print("runnnnn")
 class GssGs9oAddLine(sublime_plugin.TextCommand):
 	def run(self,edit,line):
+		import gs9o
 		win = self.view.window()
 		wid = win.id()
 		wd=gs9o.active_wd(win)
@@ -55,6 +56,7 @@ class GssGs9oAddLine(sublime_plugin.TextCommand):
 		v.show(v.size())
 class GssGs9oClear(sublime_plugin.TextCommand):
 	def run(self,edit):
+		import gs9o
 		win = self.view.window()
 		wid = win.id()
 		wd=gs9o.active_wd(win)
@@ -80,7 +82,7 @@ class GssSaveListener(sublime_plugin.EventListener):
 		wid=view.window().id()
 		g_builder=GoBuilder()
 		o_b=None
-		if w_builders.has_key(wid):
+		if wid in w_builders:
 			o_b=w_builders[wid]
 		if o_b is not None and o_b.is_running():
 			g_builder.initEnv(itest,"",view,None)
@@ -108,14 +110,14 @@ class GssStopCommand(sublime_plugin.WindowCommand):
 		global w_builders
 		g_builder=None
 		wid=self.window.id()
-		if w_builders.has_key(wid):
+		if wid in w_builders:
 			g_builder=w_builders[wid]
 		return g_builder is not None and g_builder.is_running()
 	def run(self):
 		global w_builders
 		g_builder=None
 		wid=self.window.id()
-		if w_builders.has_key(wid):
+		if wid in w_builders:
 			g_builder=w_builders[wid]
 		if g_builder is not None:
 			g_builder.bstop()
@@ -129,9 +131,11 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 		global w_builders
 		g_builder=None
 		wid=self.window.id()
-		if w_builders.has_key(wid):
+		if wid in w_builders:
 			g_builder=w_builders[wid]
 		if (g_builder is not None) and (g_builder.is_running()):
+			tview=self.window.active_view()
+			n_console_view.add_line(tview,"Builder already running\n")
 			return
 		aview=self.window.active_view()
 		apath=aview.file_name()
@@ -146,12 +150,15 @@ class GssRunCommand(sublime_plugin.WindowCommand):
 		
 class GssTestCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
+		from GoSublime.gosubl import gs
 		return gs.is_go_source_view(self.window.active_view())
 	def run(self,debug=False):
+		from GoSublime.gosubl import gs
+		from GoSublime.gosubl import mg9
 		global w_builders
 		g_builder=None
 		wid=self.window.id()
-		if w_builders.has_key(wid):
+		if wid in w_builders:
 			g_builder=w_builders[wid]
 		if (g_builder is not None) and (g_builder.is_running()):
 			g_builder.showLView()

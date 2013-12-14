@@ -30,6 +30,7 @@
     // If you are attaching to a remote program, you
     // probably want to change this to -exec-continue
     "exec_cmd": "-exec-run",
+    "go_cmd": "/usr/local/go/bin/go",
     // For the larger binaries with lot of shared libraries
     // the loading within the gdb could take much longer.
     // Configure the thread wait timeout by setting gdb_timeout
@@ -96,4 +97,5 @@
 
     // Whether to log the raw data read from and written to the gdb session and the inferior program.
     "debug": false
+
 }
