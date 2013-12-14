@@ -106,5 +106,9 @@
     {
         "caption": "GoGdb: Stop",
         "command": "gss_stop"
+    },
+    {
+        "caption": "GoGdb: ShowDebug",
+        "command": "gss_show_debug"
     }
 ]
