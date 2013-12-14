@@ -1,10 +1,12 @@
-GoGdb Sublime Text 2 Plugin.
+GoGdb Sublime Text 3 Plugin.
 ===
 
 ###Description
-Golang GDB plugin for Sublime Text 2,it modify base of <https://github.com/quarnster/SublimeGDB>.
+Golang GDB plugin for Sublime Text 3,it modify base of <https://github.com/quarnster/SublimeGDB>.
+
 if you have some question,send message to <https://github.com/Centny/GoGdb/issues>
 
+For old version for ST2, see ST2-v1.0 tag
 
 First,thanks quarnster's code of Gdb plugin.
 
