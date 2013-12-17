@@ -227,6 +227,7 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 					else:
 						global g_builder
 						g_builder=GoBuilder()
+						w_builders[wid]=g_builder
 						g_builder.initEnv(True,sargs,self.window.active_view(),n_console_view)
 						g_builder.run()
 
