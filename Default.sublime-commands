@@ -110,5 +110,9 @@
     {
         "caption": "GoGdb: ShowDebug",
         "command": "gss_show_debug"
+    },
+    {
+        "caption": "GoGdb: RunCmd",
+        "command": "gss_run_cmd"
     }
 ]

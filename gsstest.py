@@ -15,7 +15,7 @@ import sublime_plugin
 import threading 
 import subprocess
 import time
-
+import os.path
 def plugin_loaded():
 	from GoSublime.gosubl import gs
 	from GoSublime.gosubl import mg9
@@ -67,6 +67,25 @@ class GssGs9oClear(sublime_plugin.TextCommand):
 			v = win.get_output_panel(id)
 			st[id] = v
 		v.replace(edit,sublime.Region(0, v.size()),"")
+
+class GssRunCmd(sublime_plugin.WindowCommand):
+	def is_enabled(self):
+		if not hasattr(self,"cmd"):
+			return True
+		if self.cmd is None:
+			return True
+		return not self.cmd.running
+	def run(self):
+		ppath=project_path(sublime.active_window())
+		if len(ppath)<1:
+			return
+		cmdp=ppath+"/OnCmd"
+		if os.path.isfile(cmdp):
+			self.cmd=CmdThread(cmdp,ppath,sublime.active_window().active_view(),n_console_view)
+			self.cmd.start()
+		else:
+			print(cmdp+" not found")
+			
 class GssSaveListener(sublime_plugin.EventListener):
 	def __init__(self):
 		self.loading=False
