@@ -248,6 +248,7 @@ class GoBuilder:
     #tview:target view.
     #lview:the log view(GDBView)
     def initEnv(self,test,trun,tview,lview):
+        self.spath=os.path.dirname(tview.file_name())
         self.ppath=project_pathv(tview)
         if self.ppath=="":
             sublime.status_message("project not found!")
@@ -343,7 +344,7 @@ class GoBuilder:
         if not self.build(True):
             return
             # sublime.active_window().focus_view(aview)
-        self.rthr=CmdThread(self.rcmds(),self.ppath,self.tview,self.lview)
+        self.rthr=CmdThread(self.rcmds(),self.spath,self.tview,self.lview)
         self.rthr.start()
     def is_running(self):
         return (self.bthr is not None and self.bthr.running) or (self.rthr is not None and self.rthr.running)
