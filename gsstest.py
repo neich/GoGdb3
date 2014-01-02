@@ -174,7 +174,7 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 			for d in decls:
 				name = d['name']
 				prefix, _ =  match_prefix_name(name)
-				if prefix and d['kind'] == 'func' and d['repr'] == '':
+				if prefix and d['kind'].index('func')>-1 and d['repr'] == '':
 					mats[True] = prefix
 					args[name] = name
 
