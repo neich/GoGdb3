@@ -4,6 +4,7 @@ import os
 from GoGdb.sublimegdb import project_path
 from GoGdb.sublimegdb import project_pathv
 from GoGdb.sublimegdb import pkg_pathv
+from GoGdb.sublimegdb import pkg_namev
 from GoGdb.sublimegdb import GoBuilder
 from GoGdb.sublimegdb import GDBView
 from GoGdb.sublimegdb import get_setting
@@ -67,6 +68,30 @@ class GssGs9oClear(sublime_plugin.TextCommand):
 			v = win.get_output_panel(id)
 			st[id] = v
 		v.replace(edit,sublime.Region(0, v.size()),"")
+
+class OnSaveListener(sublime_plugin.EventListener):
+	def __init__(self):
+		self.loading=False
+	def is_enabled(self):
+		aview=self.window.active_view()
+		apath=aview.file_name()
+		return apath is not None and  apath.find(".go")==len(apath)-3
+	def on_post_save(self,view):
+		if self.loading:
+			return
+		ppath=project_pathv(view)
+		pkg_n=pkg_pathv(ppath,view)
+		if pkg_n=="":
+			return
+		imain=apath.find("main")==len(apath)-4
+		if imain:
+			return
+		self.loading=True
+		cmd=CmdThread("go install "+pkg_n,ppath,None,None)
+		cmd.start()
+		cmd.join()
+		self.loading=False
+
 class GssSaveListener(sublime_plugin.EventListener):
 	def __init__(self):
 		self.loading=False
@@ -163,6 +188,7 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 		if (g_builder is not None) and (g_builder.is_running()):
 			g_builder.showLView()
 			return
+		pkg_dir = ''
 		def f(res, err):
 			if err:
 				gs.notify(DOMAIN, err)
@@ -209,6 +235,7 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 						global g_builder
 						g_builder=GoBuilder()
 						g_builder.initEnv(True,sargs,self.window.active_view(),n_console_view)
+						g_builder.rcwd=pkg_dir
 						g_builder.run()
 
 			gs.show_quick_panel(ents, cb)
@@ -219,7 +246,6 @@ class GssTestCommand(sublime_plugin.WindowCommand):
 
 		vfn = gs.view_fn(view)
 		src = gs.view_src(view)
-		pkg_dir = ''
 		if view.file_name():
 			pkg_dir = os.path.dirname(view.file_name())
 

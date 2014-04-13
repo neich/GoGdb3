@@ -343,7 +343,10 @@ class GoBuilder:
         if not self.build(True):
             return
             # sublime.active_window().focus_view(aview)
-        self.rthr=CmdThread(self.rcmds(),self.ppath,self.tview,self.lview)
+        rcwd=self.ppath
+        if hasattr(self,"rcwd") and not self.rcwd=="":
+            rcwd=self.rcwd
+        self.rthr=CmdThread(self.rcmds(),rcwd,self.tview,self.lview)
         self.rthr.start()
     def is_running(self):
         return (self.bthr is not None and self.bthr.running) or (self.rthr is not None and self.rthr.running)
@@ -371,7 +374,8 @@ class CmdThread(threading.Thread):
             if olen>0:
                 if self.lview is not None:
                     self.lview.add_line(self.tview,output)
-
+                else:
+                    print(output)
             if self.proc.poll() is not None and olen<1:
                 break
         sublime.set_timeout(self.focusAview, 1)

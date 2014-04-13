@@ -7,3 +7,7 @@ sublimegdb.sublime-workspace
 *.cache
 *.bak
 GoGdb.sublime-workspace
+
+GoGdb.sublime-package
+
+package-metadata.json
