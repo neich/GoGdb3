@@ -83,6 +83,7 @@ class OnSaveListener(sublime_plugin.EventListener):
 		pkg_n=pkg_pathv(ppath,view)
 		if pkg_n=="":
 			return
+		print("on save build:",pkg_n)
 		apath=view.file_name()
 		imain=apath.find("main")==len(apath)-4
 		if imain:
