@@ -20,7 +20,7 @@ freely, subject to the following restrictions:
    3. This notice may not be removed or altered from any source
    distribution.
 """
-import sys 
+import sys
 import sublime
 import sublime_plugin
 import subprocess
@@ -33,6 +33,7 @@ import os
 import re
 import signal
 import platform
+
 try:
     import Queue
     from resultparser import parse_result_line
@@ -322,7 +323,8 @@ class GoBuilder:
         if self.test:
             cmd=go_cmd+" test "+self.pkgp+" -c "+" -i "
         else:
-            cmd=go_cmd+" build -o "+self.binp+" "+self.pkgp
+            cmd=go_cmd+" build -gcflags \"-N -l\" -o "+self.binp+" "+self.pkgp
+
         return cmd
     # def showLView(self):
     #     # aview=sublime.active_window().active_view()
