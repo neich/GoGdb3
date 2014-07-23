@@ -323,7 +323,12 @@ class GoBuilder:
         if self.test:
             cmd=go_cmd+" test "+self.pkgp+" -c "+" -i "
         else:
-            cmd=go_cmd+" build -gcflags \"-N -l\" -o "+self.binp+" "+self.pkgp
+            build_flags = get_setting("build_flags", "")
+
+            if build_flags != "":
+                build_flags = " " + " ".join(build_flags)
+
+            cmd=go_cmd+" build" + build_flags + " -o "+self.binp+" "+self.pkgp
 
         return cmd
     # def showLView(self):
