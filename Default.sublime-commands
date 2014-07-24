@@ -1,84 +1,84 @@
 [
     {
-        "caption": "Preferences: SublimeGDB Settings – Default",
+        "caption": "Preferences: GoGdb Settings – Default",
         "command": "open_file", "args":
         {
-            "file": "${packages}/SublimeGDB/SublimeGDB.sublime-settings"
+            "file": "${packages}/GoGdb/GoGdb.sublime-settings"
         }
     },
     {
-        "caption": "Preferences: SublimeGDB Settings – User",
+        "caption": "Preferences: GoGdb Settings – User",
         "command": "open_file", "args":
         {
-            "file": "${packages}/User/SublimeGDB.sublime-settings"
+            "file": "${packages}/User/GoGdb.sublime-settings"
         }
     },
     {
-        "caption": "SublimeGDB: Show Input Field",
+        "caption": "GoGdb: Show Input Field",
         "command": "gdb_input"
     },
     {
-        "caption": "SublimeGDB: Start Debugging",
+        "caption": "GoGdb: Start Debugging",
         "command": "gdb_launch"
     },
     {
-        "caption": "SublimeGDB: Continue",
+        "caption": "GoGdb: Continue",
         "command": "gdb_continue"
     },
     {
-        "caption": "SublimeGDB: Pause",
+        "caption": "GoGdb: Pause",
         "command": "gdb_pause"
     },
     {
-        "caption": "SublimeGDB: Step Over",
+        "caption": "GoGdb: Step Over",
         "command": "gdb_step_over"
     },
     {
-        "caption": "SublimeGDB: Step Into",
+        "caption": "GoGdb: Step Into",
         "command": "gdb_step_into"
     },
     {
-        "caption": "SublimeGDB: Step Next Instruction",
+        "caption": "GoGdb: Step Next Instruction",
         "command": "gdb_next_instruction"
     },
     {
-        "caption": "SublimeGDB: Step Out",
+        "caption": "GoGdb: Step Out",
         "command": "gdb_step_out"
     },
     {
-        "caption": "SublimeGDB: Stop Debugging",
+        "caption": "GoGdb: Stop Debugging",
         "command": "gdb_exit"
     },
     {
-        "caption": "SublimeGDB: Open Register View",
+        "caption": "GoGdb: Open Register View",
         "command": "gdb_open_register_view"
     },
     {
-        "caption": "SublimeGDB: Open Session View",
+        "caption": "GoGdb: Open Session View",
         "command": "gdb_open_session_view"
     },
     {
-        "caption": "SublimeGDB: Open Console View",
+        "caption": "GoGdb: Open Console View",
         "command": "gdb_open_console_view"
     },
     {
-        "caption": "SublimeGDB: Open Callstack View",
+        "caption": "GoGdb: Open Callstack View",
         "command": "gdb_open_callstack_view"
     },
     {
-        "caption": "SublimeGDB: Open Variables View",
+        "caption": "GoGdb: Open Variables View",
         "command": "gdb_open_variables_view"
     },
     {
-        "caption": "SublimeGDB: Open Disassembly View",
+        "caption": "GoGdb: Open Disassembly View",
         "command": "gdb_open_disassembly_view"
     },
     {
-        "caption": "SublimeGDB: Open Breakpoint View",
+        "caption": "GoGdb: Open Breakpoint View",
         "command": "gdb_open_breakpoint_view"
     },
     {
-        "caption": "SublimeGDB: Open Threads View",
+        "caption": "GoGdb: Open Threads View",
         "command": "gdb_open_threads_view"
     },
     {

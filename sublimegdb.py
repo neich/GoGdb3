@@ -74,8 +74,8 @@ def get_setting(key, default=None, view=None):
         if view is None:
             view = sublime.active_window().active_view()
         s = view.settings()
-        if s.has("sublimegdb_%s" % key):
-            return s.get("sublimegdb_%s" % key)
+        if s.has("gogdb_%s" % key):
+            return s.get("gogdb_%s" % key)
     except:
         pass
     return sublime.load_settings("GoGdb.sublime-settings").get(key, default)
@@ -910,7 +910,7 @@ class GDBRegisterView(GDBView):
                 region = region.cover(v.full_line(v.text_point(self.values[i].line + self.values[i].lines - 1, 0)))
 
             regions.append(region)
-        v.add_regions("sublimegdb.dirtyregisters", regions,
+        v.add_regions("gogdb.dirtyregisters", regions,
                         get_setting("changed_variable_scope", "entity.name.class"),
                         get_setting("changed_variable_icon", ""),
                         sublime.DRAW_OUTLINED)
@@ -950,7 +950,7 @@ class GDBVariablesView(GDBView):
         v = self.get_view()
         for dirty in dirtylist:
             regions.append(v.full_line(v.text_point(dirty.line, 0)))
-        v.add_regions("sublimegdb.dirtyvariables", regions,
+        v.add_regions("gogdb.dirtyvariables", regions,
                         get_setting("changed_variable_scope", "entity.name.class"),
                         get_setting("changed_variable_icon", ""),
                         sublime.DRAW_OUTLINED)
@@ -1129,11 +1129,11 @@ class GDBCallstackView(GDBView):
                 for i in range(gdb_stack_index):
                     line += self.frames[i].lines
 
-                view.add_regions("sublimegdb.stackframe",
+                view.add_regions("gogdb.stackframe",
                                     [view.line(view.text_point(line, 0))],
                                     pos_scope, pos_icon, sublime.HIDDEN)
             else:
-                view.erase_regions("sublimegdb.stackframe")
+                view.erase_regions("gogdb.stackframe")
 
     def select(self, row):
         line = 0
@@ -1227,11 +1227,11 @@ class GDBThreadsView(GDBView):
                     break
 
             if line != -1:
-                view.add_regions("sublimegdb.currentthread",
+                view.add_regions("gogdb.currentthread",
                                     [view.line(view.text_point(line, 0))],
                                     pos_scope, pos_icon, sublime.HIDDEN)
             else:
-                view.erase_regions("sublimegdb.currentthread")
+                view.erase_regions("gogdb.currentthread")
 
     def select_thread(self, thread):
         run_cmd("-thread-select %d" % thread)
@@ -1299,11 +1299,11 @@ class GDBDisassemblyView(GDBView):
         view = self.get_view()
         reg = view.find("^0x[0]*%x:" % pc, 0)
         if reg is None:
-            view.erase_regions("sublimegdb.programcounter")
+            view.erase_regions("gogdb.programcounter")
         else:
             pos_scope = get_setting("position_scope", "entity.name.class")
             pos_icon = get_setting("position_icon", "bookmark")
-            view.add_regions("sublimegdb.programcounter",
+            view.add_regions("gogdb.programcounter",
                             [reg],
                             pos_scope, pos_icon, sublime.HIDDEN)
 
@@ -1441,7 +1441,7 @@ class GDBBreakpointView(GDBView):
             if bkpt.filename == fn and not (bkpt.line == gdb_cursor_position and fn == gdb_cursor):
                 bps.append(view.full_line(view.text_point(bkpt.line - 1, 0)))
 
-        view.add_regions("sublimegdb.breakpoints", bps,
+        view.add_regions("gogdb.breakpoints", bps,
                             get_setting("breakpoint_scope", "keyword.gdb"),
                             get_setting("breakpoint_icon", "circle"),
                             sublime.HIDDEN)
@@ -1544,9 +1544,9 @@ def update_view_markers(view=None):
         cursor.append(view.full_line(view.text_point(gdb_cursor_position - 1, 0)))
     global gdb_last_cursor_view
     if gdb_last_cursor_view is not None:
-        gdb_last_cursor_view.erase_regions("sublimegdb.position")
+        gdb_last_cursor_view.erase_regions("gogdb.position")
     gdb_last_cursor_view = view
-    view.add_regions("sublimegdb.position", cursor, pos_scope, pos_icon, sublime.HIDDEN)
+    view.add_regions("gogdb.position", cursor, pos_scope, pos_icon, sublime.HIDDEN)
 
     gdb_callstack_view.update_marker(pos_scope, pos_icon)
     gdb_threads_view.update_marker(pos_scope, pos_icon)
