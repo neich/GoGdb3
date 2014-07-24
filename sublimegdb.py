@@ -61,7 +61,7 @@ except:
         return s.decode("utf-8",'ignore')
 
     import queue as Queue
-    from GoGdb.resultparser import parse_result_line
+    from GoGdb3.resultparser import parse_result_line
 def exec_ext():
     if is_windows():
         return ".exe"
@@ -74,11 +74,11 @@ def get_setting(key, default=None, view=None):
         if view is None:
             view = sublime.active_window().active_view()
         s = view.settings()
-        if s.has("gogdb_%s" % key):
-            return s.get("gogdb_%s" % key)
+        if s.has("gogdb3_%s" % key):
+            return s.get("gogdb3_%s" % key)
     except:
         pass
-    return sublime.load_settings("GoGdb.sublime-settings").get(key, default)
+    return sublime.load_settings("GoGdb3.sublime-settings").get(key, default)
 
 def project_path(window):
     if window is None:
@@ -857,7 +857,7 @@ class GDBRegisterView(GDBView):
 
     def open(self):
         super(GDBRegisterView, self).open()
-        self.set_syntax("Packages/GoGdb/gdb_registers.tmLanguage")
+        self.set_syntax("Packages/GoGdb3/gdb_registers.tmLanguage")
         self.get_view().settings().set("word_wrap", False)
         if self.is_open() and gdb_run_status == "stopped":
             self.update_values()
@@ -910,7 +910,7 @@ class GDBRegisterView(GDBView):
                 region = region.cover(v.full_line(v.text_point(self.values[i].line + self.values[i].lines - 1, 0)))
 
             regions.append(region)
-        v.add_regions("gogdb.dirtyregisters", regions,
+        v.add_regions("gogdb3.dirtyregisters", regions,
                         get_setting("changed_variable_scope", "entity.name.class"),
                         get_setting("changed_variable_icon", ""),
                         sublime.DRAW_OUTLINED)
@@ -950,7 +950,7 @@ class GDBVariablesView(GDBView):
         v = self.get_view()
         for dirty in dirtylist:
             regions.append(v.full_line(v.text_point(dirty.line, 0)))
-        v.add_regions("gogdb.dirtyvariables", regions,
+        v.add_regions("gogdb3.dirtyvariables", regions,
                         get_setting("changed_variable_scope", "entity.name.class"),
                         get_setting("changed_variable_icon", ""),
                         sublime.DRAW_OUTLINED)
@@ -1129,11 +1129,11 @@ class GDBCallstackView(GDBView):
                 for i in range(gdb_stack_index):
                     line += self.frames[i].lines
 
-                view.add_regions("gogdb.stackframe",
+                view.add_regions("gogdb3.stackframe",
                                     [view.line(view.text_point(line, 0))],
                                     pos_scope, pos_icon, sublime.HIDDEN)
             else:
-                view.erase_regions("gogdb.stackframe")
+                view.erase_regions("gogdb3.stackframe")
 
     def select(self, row):
         line = 0
@@ -1227,11 +1227,11 @@ class GDBThreadsView(GDBView):
                     break
 
             if line != -1:
-                view.add_regions("gogdb.currentthread",
+                view.add_regions("gogdb3.currentthread",
                                     [view.line(view.text_point(line, 0))],
                                     pos_scope, pos_icon, sublime.HIDDEN)
             else:
-                view.erase_regions("gogdb.currentthread")
+                view.erase_regions("gogdb3.currentthread")
 
     def select_thread(self, thread):
         run_cmd("-thread-select %d" % thread)
@@ -1251,7 +1251,7 @@ class GDBDisassemblyView(GDBView):
 
     def open(self):
         super(GDBDisassemblyView, self).open()
-        self.set_syntax("Packages/GoGdb/gdb_disasm.tmLanguage")
+        self.set_syntax("Packages/GoGdb3/gdb_disasm.tmLanguage")
         self.get_view().settings().set("word_wrap", False)
         if self.is_open() and gdb_run_status == "stopped":
             self.update_disassembly()
@@ -1299,11 +1299,11 @@ class GDBDisassemblyView(GDBView):
         view = self.get_view()
         reg = view.find("^0x[0]*%x:" % pc, 0)
         if reg is None:
-            view.erase_regions("gogdb.programcounter")
+            view.erase_regions("gogdb3.programcounter")
         else:
             pos_scope = get_setting("position_scope", "entity.name.class")
             pos_icon = get_setting("position_icon", "bookmark")
-            view.add_regions("gogdb.programcounter",
+            view.add_regions("gogdb3.programcounter",
                             [reg],
                             pos_scope, pos_icon, sublime.HIDDEN)
 
@@ -1441,7 +1441,7 @@ class GDBBreakpointView(GDBView):
             if bkpt.filename == fn and not (bkpt.line == gdb_cursor_position and fn == gdb_cursor):
                 bps.append(view.full_line(view.text_point(bkpt.line - 1, 0)))
 
-        view.add_regions("gogdb.breakpoints", bps,
+        view.add_regions("gogdb3.breakpoints", bps,
                             get_setting("breakpoint_scope", "keyword.gdb"),
                             get_setting("breakpoint_icon", "circle"),
                             sublime.HIDDEN)
@@ -1515,7 +1515,7 @@ class GDBSessionView(GDBView):
 
     def open(self):
         super(GDBSessionView, self).open()
-        self.set_syntax("Packages/GoGdb/gdb_session.tmLanguage")
+        self.set_syntax("Packages/GoGdb3/gdb_session.tmLanguage")
 
 
 gdb_session_view = GDBSessionView()
@@ -1544,9 +1544,9 @@ def update_view_markers(view=None):
         cursor.append(view.full_line(view.text_point(gdb_cursor_position - 1, 0)))
     global gdb_last_cursor_view
     if gdb_last_cursor_view is not None:
-        gdb_last_cursor_view.erase_regions("gogdb.position")
+        gdb_last_cursor_view.erase_regions("gogdb3.position")
     gdb_last_cursor_view = view
-    view.add_regions("gogdb.position", cursor, pos_scope, pos_icon, sublime.HIDDEN)
+    view.add_regions("gogdb3.position", cursor, pos_scope, pos_icon, sublime.HIDDEN)
 
     gdb_callstack_view.update_marker(pos_scope, pos_icon)
     gdb_threads_view.update_marker(pos_scope, pos_icon)

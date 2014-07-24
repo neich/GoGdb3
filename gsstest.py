@@ -1,15 +1,15 @@
 
 import sys
 import os
-from GoGdb.sublimegdb import project_path
-from GoGdb.sublimegdb import project_pathv
-from GoGdb.sublimegdb import pkg_pathv
-from GoGdb.sublimegdb import pkg_namev
-from GoGdb.sublimegdb import GoBuilder
-from GoGdb.sublimegdb import GDBView
-from GoGdb.sublimegdb import get_setting
-from GoGdb.sublimegdb import CmdThread
-from GoGdb.sublimegdb import n_console_view
+from GoGdb3.sublimegdb import project_path
+from GoGdb3.sublimegdb import project_pathv
+from GoGdb3.sublimegdb import pkg_pathv
+from GoGdb3.sublimegdb import pkg_namev
+from GoGdb3.sublimegdb import GoBuilder
+from GoGdb3.sublimegdb import GDBView
+from GoGdb3.sublimegdb import get_setting
+from GoGdb3.sublimegdb import CmdThread
+from GoGdb3.sublimegdb import n_console_view
 import re
 import sublime
 import sublime_plugin

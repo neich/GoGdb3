@@ -1,114 +1,114 @@
 [
     {
-        "caption": "Preferences: GoGdb Settings – Default",
+        "caption": "Preferences: GoGdb3 Settings – Default",
         "command": "open_file", "args":
         {
-            "file": "${packages}/GoGdb/GoGdb.sublime-settings"
+            "file": "${packages}/GoGdb3/GoGdb3.sublime-settings"
         }
     },
     {
-        "caption": "Preferences: GoGdb Settings – User",
+        "caption": "Preferences: GoGdb3 Settings – User",
         "command": "open_file", "args":
         {
-            "file": "${packages}/User/GoGdb.sublime-settings"
+            "file": "${packages}/User/GoGdb3.sublime-settings"
         }
     },
     {
-        "caption": "GoGdb: Show Input Field",
+        "caption": "GoGdb3: Show Input Field",
         "command": "gdb_input"
     },
     {
-        "caption": "GoGdb: Start Debugging",
+        "caption": "GoGdb3: Start Debugging",
         "command": "gdb_launch"
     },
     {
-        "caption": "GoGdb: Continue",
+        "caption": "GoGdb3: Continue",
         "command": "gdb_continue"
     },
     {
-        "caption": "GoGdb: Pause",
+        "caption": "GoGdb3: Pause",
         "command": "gdb_pause"
     },
     {
-        "caption": "GoGdb: Step Over",
+        "caption": "GoGdb3: Step Over",
         "command": "gdb_step_over"
     },
     {
-        "caption": "GoGdb: Step Into",
+        "caption": "GoGdb3: Step Into",
         "command": "gdb_step_into"
     },
     {
-        "caption": "GoGdb: Step Next Instruction",
+        "caption": "GoGdb3: Step Next Instruction",
         "command": "gdb_next_instruction"
     },
     {
-        "caption": "GoGdb: Step Out",
+        "caption": "GoGdb3: Step Out",
         "command": "gdb_step_out"
     },
     {
-        "caption": "GoGdb: Stop Debugging",
+        "caption": "GoGdb3: Stop Debugging",
         "command": "gdb_exit"
     },
     {
-        "caption": "GoGdb: Open Register View",
+        "caption": "GoGdb3: Open Register View",
         "command": "gdb_open_register_view"
     },
     {
-        "caption": "GoGdb: Open Session View",
+        "caption": "GoGdb3: Open Session View",
         "command": "gdb_open_session_view"
     },
     {
-        "caption": "GoGdb: Open Console View",
+        "caption": "GoGdb3: Open Console View",
         "command": "gdb_open_console_view"
     },
     {
-        "caption": "GoGdb: Open Callstack View",
+        "caption": "GoGdb3: Open Callstack View",
         "command": "gdb_open_callstack_view"
     },
     {
-        "caption": "GoGdb: Open Variables View",
+        "caption": "GoGdb3: Open Variables View",
         "command": "gdb_open_variables_view"
     },
     {
-        "caption": "GoGdb: Open Disassembly View",
+        "caption": "GoGdb3: Open Disassembly View",
         "command": "gdb_open_disassembly_view"
     },
     {
-        "caption": "GoGdb: Open Breakpoint View",
+        "caption": "GoGdb3: Open Breakpoint View",
         "command": "gdb_open_breakpoint_view"
     },
     {
-        "caption": "GoGdb: Open Threads View",
+        "caption": "GoGdb3: Open Threads View",
         "command": "gdb_open_threads_view"
     },
     {
-        "caption": "GoGdb: Debug Test",
+        "caption": "GoGdb3: Debug Test",
         "command": "gss_test",
         "args":{
             "debug":true
         }
     },
     {
-        "caption": "GoGdb: Stop Debug",
+        "caption": "GoGdb3: Stop Debug",
         "command": "gdb_kill"
     },
     {
-        "caption": "GoGdb: Run Test",
+        "caption": "GoGdb3: Run Test",
         "command": "gss_test",
         "args":{
             "debug":false
         }
     },
     {
-        "caption": "GoGdb: Run",
+        "caption": "GoGdb3: Run",
         "command": "gss_run"
     },
     {
-        "caption": "GoGdb: Stop",
+        "caption": "GoGdb3: Stop",
         "command": "gss_stop"
     },
     {
-        "caption": "GoGdb: ShowDebug",
+        "caption": "GoGdb3: ShowDebug",
         "command": "gss_show_debug"
     }
 ]
